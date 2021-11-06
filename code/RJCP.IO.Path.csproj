@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;netstandard2.1</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <Configurations>Debug;Release</Configurations>
+    <NeutralLanguage>en-US</NeutralLanguage>
+
+    <AssemblyName>RJCP.IO.Path</AssemblyName>
+    <AssemblyTitle>RJCP.IO.Path</AssemblyTitle>
+    <Product>RJCP.IO.Path</Product>
+    <RootNamespace>RJCP.IO</RootNamespace>
+
+    <Authors>Jason Curl</Authors>
+    <Copyright>(C) 2012-2021, Jason Curl</Copyright>
+    <Company></Company>
+    <PackageId>RJCP.IO.Path</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/jcurl</PackageProjectUrl>
+    <Description>Functions to work with and manipulate paths for Unix and Windows.</Description>
+    <Version>0.2.0</Version>
+
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Default</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
+
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="OSInfo.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Path.cs" />
+    <Compile Include="WindowsPath.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

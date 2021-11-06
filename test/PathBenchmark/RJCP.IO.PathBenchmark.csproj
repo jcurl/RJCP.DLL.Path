@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net48;netcoreapp3.1</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <Configurations>Debug;Release</Configurations>
+
+    <AssemblyName>RJCP.IO.PathBenchmark</AssemblyName>
+    <AssemblyTitle>RJCP.IO.PathBenchmark</AssemblyTitle>
+    <Product>RJCP.IO.Path</Product>
+    <RootNamespace>RJCP.IO</RootNamespace>
+
+    <Authors>Jason Curl</Authors>
+    <Copyright>(C) 2012-2021, Jason Curl</Copyright>
+    <Company></Company>
+    <Description>Benchmark harness for RJCP.IO.Path.</Description>
+    <Version>1.0.0</Version>
+
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Default</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFrameworkIdentifier) == '.NETFramework'">
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+    <ProjectReference Include="..\..\code\RJCP.IO.Path.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="WindowsPathAppendBenchmark.cs" />
+    <Compile Include="WindowsPathParentBenchmark.cs" />
+    <Compile Include="WindowsPathInstantiateBenchmark.cs" />
+    <Compile Include="WindowsPathRelativeBenchmark.cs" />
+  </ItemGroup>
+
+</Project>
