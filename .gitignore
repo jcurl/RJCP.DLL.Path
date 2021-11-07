@@ -3,6 +3,8 @@
 bin/
 obj/
 TestResults/
+Benchmark.*
+BenchmarkDotNet.*
 *~
 *.user
 *.userprefs
