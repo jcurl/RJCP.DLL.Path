@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.Text;
 
 #if NETSTANDARD
@@ -26,6 +27,10 @@
 
         private IList<string> m_PathStack;
 
+        // The number of times to iterate a parent path (..) at the beginning of the stack. This is an optimization that
+        // can speed up appending operations.
+        private int m_Parents;
+
         private WindowsPath() { }
 
         /// <summary>
@@ -42,6 +47,29 @@
         public WindowsPath(string path)
         {
             ParsePath(path);
+            Check();
+        }
+
+        [Conditional("DEBUG")]
+        private void Check()
+        {
+            // Check consistency rules for the path, to ensure that any changes to this code doesn't cause regressions.
+            // This is not done in RELEASE mode for performance.
+
+            if (IsPinned) {
+                if (m_Parents != 0)
+                    throw new InvalidOperationException($"Inconsistent state when pinned - m_Parent = {m_Parents}");
+            } else {
+                int l = 0;
+                for (int i = 0; i < m_PathStack.Count; i++) {
+                    if (m_PathStack[i].Equals("..", StringComparison.Ordinal)) l++;
+                }
+                if (m_Parents != l)
+                    throw new InvalidOperationException($"Inconsistent state - m_Parent = {m_Parents}; counted {l}");
+            }
+
+            if (m_Parents > m_PathStack.Count)
+                throw new InvalidOperationException($"Inconsistent state - m_Parent {m_Parents} more than count {m_PathStack.Count}");
         }
 
         // After ParsePath is finished, the properties are set:
@@ -298,6 +326,7 @@
                     i++;
                 }
             }
+            m_Parents = l;
         }
 
         /// <summary>
@@ -382,32 +411,65 @@
 
             if (winPath.IsPinned) {
                 newPath.m_PathStack = winPath.m_PathStack;
-            } else {
-                List<string> stack;
-                // L = 0
-                // L = 1, ""
+                newPath.Check();
+                return newPath;
+            }
 
-                int leftCount = m_PathStack.Count;
-                if (leftCount == 0) {
-                    stack = new List<string>();
-                } else {
-                    bool leftTrim = string.IsNullOrEmpty(m_PathStack[leftCount - 1]) &&
-                        winPath.m_PathStack.Count > 0;
-                    if (!leftTrim) {
-                        stack = new List<string>(m_PathStack);
-                    } else {
-                        stack = new List<string>();
-                        for (int i = 0; i < leftCount - 1; i++) {
-                            stack.Add(m_PathStack[i]);
+            int leftCount = m_PathStack.Count;
+            List<string> stack;
+            int skip = 0;
+
+            if (leftCount == 0) {
+                stack = new List<string>();
+            } else {
+                bool leftTrim = string.IsNullOrEmpty(m_PathStack[leftCount - 1]) &&
+                    winPath.m_PathStack.Count > 0;
+                if (leftTrim) leftCount--;
+
+                if (newPath.IsPinned && winPath.m_Parents > leftCount)
+                    throw new ArgumentException("Invalid path when normalizing");
+
+                if (IsPinned) {
+                    if (leftCount == winPath.m_Parents && winPath.m_Parents == winPath.m_PathStack.Count) {
+                        if (IsUnc) {
+                            newPath.m_PathStack = EmptyStack;
+                        } else {
+                            newPath.m_PathStack = RootStack;
                         }
+                        newPath.Check();
+                        return newPath;
                     }
                 }
 
-                stack.AddRange(winPath.m_PathStack);
-                newPath.m_PathStack = stack;
-                newPath.NormalizePath();
+                // Don't copy node paths, that we'll remove again later by normalization.
+                if (winPath.m_Parents > 0) {
+                    skip = Math.Min(leftCount - m_Parents, winPath.m_Parents);
+                }
+
+                if (!leftTrim && skip == 0) {
+                    stack = new List<string>(m_PathStack);
+                    newPath.m_Parents = m_Parents;
+                } else {
+                    stack = new List<string>();
+                    for (int i = 0; i < leftCount - skip; i++) {
+                        stack.Add(m_PathStack[i]);
+                    }
+                    newPath.m_Parents = Math.Min(m_Parents, leftCount - skip);
+                }
             }
 
+            if (skip == 0) {
+                stack.AddRange(winPath.m_PathStack);
+                newPath.m_Parents += winPath.m_Parents;
+            } else {
+                for (int i = skip; i < winPath.m_PathStack.Count; i++) {
+                    stack.Add(winPath.m_PathStack[i]);
+                }
+                newPath.m_Parents += Math.Max(winPath.m_Parents - skip, 0);
+            }
+            newPath.m_PathStack = stack;
+
+            newPath.Check();
             return newPath;
         }
 
@@ -451,17 +513,7 @@
                     nodes--;
                 }
             } else {
-                // TODO: We could cache 'l' to speed up these loops. But should test with benchmarking first.
-
-                int l = 0;
-                for (int i = 0; i < nodes; i++) {
-                    if (m_PathStack[i].Equals("..", StringComparison.InvariantCulture)) {
-                        l++;
-                    } else {
-                        break;
-                    }
-                }
-                if (nodes > l) {
+                if (nodes > m_Parents) {
                     nodes--;
                 } else {
                     appendParent = true;
@@ -471,6 +523,7 @@
             if (nodes == 0) {
                 if (appendParent) {
                     newPath.m_PathStack = new List<string>() { ".." };
+                    newPath.m_Parents = 1;
                 } else {
                     newPath.m_PathStack = EmptyStack;
                 }
@@ -479,8 +532,14 @@
                 for (int i = 0; i < nodes; i++) {
                     newPath.m_PathStack.Add(m_PathStack[i]);
                 }
-                if (appendParent) newPath.m_PathStack.Add("..");
+                if (appendParent) {
+                    newPath.m_PathStack.Add("..");
+                    newPath.m_Parents = m_Parents + 1;
+                } else {
+                    newPath.m_Parents = m_Parents;
+                }
             }
+            newPath.Check();
             return newPath;
         }
 
@@ -533,14 +592,14 @@
             // | X:\foo | Y:\bar | X:\foo | Y:\bar + X:\foo = X:\foo |
 
             StringComparison cmp = caseSensitive ?
-                StringComparison.InvariantCulture :
-                StringComparison.InvariantCultureIgnoreCase;
+                StringComparison.Ordinal :
+                StringComparison.OrdinalIgnoreCase;
 
             int leftLen = GetStackLength(m_PathStack);
             int rightLen = GetStackLength(basePath.m_PathStack);
 
             int match = -1;
-            int pos = 0;
+            int pos = m_Parents < basePath.m_Parents ? m_Parents : basePath.m_Parents;
 
             while (pos < leftLen && pos < rightLen) {
                 string left = m_PathStack[pos];
@@ -564,7 +623,8 @@
 
             newPath.m_PathStack = new List<string>();
 
-            for (int i = 0; i < rightLen - match; i++) {
+            newPath.m_Parents = rightLen - match;
+            for (int i = 0; i < newPath.m_Parents; i++) {
                 newPath.m_PathStack.Add("..");
             }
 
@@ -572,6 +632,7 @@
                 newPath.m_PathStack.Add(m_PathStack[i]);
             }
 
+            newPath.Check();
             return newPath;
         }
 
@@ -609,7 +670,9 @@
                     stack.Add(m_PathStack[i]);
                 }
                 newPath.m_PathStack = stack;
+                newPath.m_Parents = m_Parents;
             }
+            newPath.Check();
             return newPath;
         }
 
