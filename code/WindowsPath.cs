@@ -62,7 +62,7 @@
             } else {
                 int l = 0;
                 for (int i = 0; i < m_PathStack.Count; i++) {
-                    if (m_PathStack[i].Equals("..", StringComparison.Ordinal)) l++;
+                    if (string.CompareOrdinal("..", m_PathStack[i]) == 0) l++;
                 }
                 if (m_Parents != l)
                     throw new InvalidOperationException($"Inconsistent state - m_Parent = {m_Parents}; counted {l}");
@@ -196,17 +196,25 @@
             NormalizePath();
         }
 
+        private static readonly string[] DriveLetter = {
+            "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:",
+            "N:", "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"
+        };
+
         private int CheckIsDos(string path)
         {
             if (path[1] == ':') {
                 // Check for DOS X:
-                if (IsDosDriveLetter(path[0])) {
-                    RootVolume = path.Substring(0, 2).ToUpperInvariant();
-                    IsDos = true;
-                    return 2;
+                char d = path[0];
+                if (d >= 'a' && d <= 'z') {
+                    RootVolume = DriveLetter[d - 'a'];
+                } else if (d >= 'A' && d <= 'Z') {
+                    RootVolume = DriveLetter[d - 'A'];
                 } else {
                     throw new ArgumentException("Invalid path", nameof(path));
                 }
+                IsDos = true;
+                return 2;
             }
             return 0;
         }
@@ -267,11 +275,6 @@
             return c == '/' || c == '\\';
         }
 
-        private static bool IsDosDriveLetter(char c)
-        {
-            return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';
-        }
-
         private static bool IsUncValidChar(char c)
         {
             return
@@ -294,7 +297,7 @@
             int c = m_PathStack.Count;
             while (i < c) {
                 string node = m_PathStack[i];
-                if (node.Equals(".", StringComparison.InvariantCultureIgnoreCase)) {
+                if (string.CompareOrdinal(".", node) == 0) {
                     if (IsPinned && c == 1) {
                         m_PathStack[i] = string.Empty;
                         return;
@@ -302,7 +305,7 @@
                         m_PathStack.RemoveAt(i);
                         --c;
                     }
-                } else if (node.Equals("..", StringComparison.InvariantCultureIgnoreCase)) {
+                } else if (string.CompareOrdinal("..", node) == 0) {
                     if (i == l) {
                         if (IsPinned)
                             throw new ArgumentException("Invalid path when normalizing");
@@ -398,7 +401,7 @@
             // Rule 3
             if (!string.IsNullOrEmpty(RootVolume) &&
                 !winPath.IsPinned && !string.IsNullOrEmpty(winPath.RootVolume) &&
-                !winPath.RootVolume.Equals(RootVolume, StringComparison.InvariantCultureIgnoreCase)) {
+                !winPath.RootVolume.Equals(RootVolume, StringComparison.OrdinalIgnoreCase)) {
                 throw new ArgumentException("Can't append unpinned paths with different root volumes", nameof(path));
             }
 
@@ -578,7 +581,7 @@
             // If the root volumes differ, then they cannot be compared. Return this path, as there is no relative path
             // to this path. Even if they're both UNC and equivalent (e.g. \\srv\ and \\srv), then we can still return
             // this object, making for a fast check.
-            if (!RootVolume.Equals(basePath.RootVolume, StringComparison.InvariantCultureIgnoreCase)) return this;
+            if (!RootVolume.Equals(basePath.RootVolume, StringComparison.OrdinalIgnoreCase)) return this;
 
             // If both are pinned, or both are unpinned, we can calculate the relative difference between the two. Else
             // return the current object.
@@ -591,25 +594,34 @@
             // | X:\foo | X:\bar | ..\foo | X:\bar + ..\foo = X:\foo |
             // | X:\foo | Y:\bar | X:\foo | Y:\bar + X:\foo = X:\foo |
 
-            StringComparison cmp = caseSensitive ?
-                StringComparison.Ordinal :
-                StringComparison.OrdinalIgnoreCase;
-
             int leftLen = GetStackLength(m_PathStack);
             int rightLen = GetStackLength(basePath.m_PathStack);
 
             int match = -1;
             int pos = m_Parents < basePath.m_Parents ? m_Parents : basePath.m_Parents;
 
-            while (pos < leftLen && pos < rightLen) {
-                string left = m_PathStack[pos];
-                string right = basePath.m_PathStack[pos];
+            if (caseSensitive) {
+                while (pos < leftLen && pos < rightLen) {
+                    string left = m_PathStack[pos];
+                    string right = basePath.m_PathStack[pos];
 
-                if (!left.Equals(right, cmp)) {
-                    match = pos;
-                    break;
+                    if (string.CompareOrdinal(left, right) != 0) {
+                        match = pos;
+                        break;
+                    }
+                    pos++;
                 }
-                pos++;
+            } else {
+                while (pos < leftLen && pos < rightLen) {
+                    string left = m_PathStack[pos];
+                    string right = basePath.m_PathStack[pos];
+
+                    if (!left.Equals(right, StringComparison.OrdinalIgnoreCase)) {
+                        match = pos;
+                        break;
+                    }
+                    pos++;
+                }
             }
 
             if (match == -1) match = pos;      // The length of the shortest stack
