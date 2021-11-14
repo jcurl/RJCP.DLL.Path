@@ -1,4 +1,4 @@
-namespace RJCP.IO
+﻿namespace RJCP.IO
 {
     using System;
     using NUnit.Framework;
@@ -71,6 +71,12 @@ namespace RJCP.IO
         [TestCase("//server/share/foo/", @"\\server\share", @"\\server\share\foo\", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
         [TestCase("//server/share/foo/bar", @"\\server\share", @"\\server\share\foo\bar", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
         [TestCase("//server/share/foo/bar/", @"\\server\share", @"\\server\share\foo\bar\", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
+        [TestCase(@"C:\Dokü\500€.txt", @"C:", @"C:\Dokü\500€.txt", WinPathFeature.IsDos | WinPathFeature.IsPinned)]
+        [TestCase(@"\\192.168.1.1\share\file.txt", @"\\192.168.1.1\share", @"\\192.168.1.1\share\file.txt", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
+        [TestCase(@"\\::1\share\file.txt", @"\\::1\share", @"\\::1\share\file.txt", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
+        [TestCase(@"\\foo*\share", @"\\foo*\share", @"\\foo*\share", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
+        [TestCase(@"\\x_y\share", @"\\x_y\share", @"\\x_y\share", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
+        [TestCase(@"\\鳥\目\山水.txt", @"\\鳥\目", @"\\鳥\目\山水.txt", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
         public void ParsePath(string path, string rootVolume, string expectedPath, WinPathFeature features)
         {
             WindowsPath p = new WindowsPath(path);
@@ -83,6 +89,16 @@ namespace RJCP.IO
                 Assert.That(p.IsDos, Is.EqualTo(features.HasFlag(WinPathFeature.IsDos)));
                 Assert.That(p.IsUnc, Is.EqualTo(features.HasFlag(WinPathFeature.IsUnc)));
             });
+        }
+
+        [TestCase(@"ü:\")]
+        [TestCase(@"€:\")]
+        [TestCase(@"\\server\\share")]
+        public void InvalidPath(string path)
+        {
+            Assert.That(() => {
+                _ = new WindowsPath(path);
+            }, Throws.TypeOf<ArgumentException>());
         }
 
         [TestCase("C:.", "C:")]
@@ -124,6 +140,8 @@ namespace RJCP.IO
         [TestCase(@".\bar", "bar")]
         [TestCase(@"\.\bar", @"\bar")]
         [TestCase(@"foo\\bar", @"foo\bar")]
+        [TestCase(@"C:\\foo", @"C:\foo")]
+        [TestCase(@"\\server\share\\foo", @"\\server\share\foo")]
         public void NormalizedPath(string path, string expectedPath)
         {
             if (expectedPath == null) {

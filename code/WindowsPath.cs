@@ -232,8 +232,6 @@
                 int s = 2;
                 for (int p = 2; p < path.Length; p++) {
                     char c = path[p];
-                    if (!IsUncValidChar(c) && !IsDirSepChar(c))
-                        throw new ArgumentException("Invalid UNC path", nameof(path));
                     if (IsDirSepChar(c)) {
                         if (p == s) {
                             // The 's' ensures that there is at least one character after the last '\' character.
@@ -273,17 +271,6 @@
         private static bool IsDirSepChar(char c)
         {
             return c == '/' || c == '\\';
-        }
-
-        private static bool IsUncValidChar(char c)
-        {
-            return
-                c >= 'a' && c <= 'z' ||
-                c >= 'A' && c <= 'Z' ||
-                c >= '0' && c <= '9' ||
-                c == '.' || c == '?' ||
-                c == '-' ||
-                c == '{' || c == '}';
         }
 
         private void NormalizePath()
