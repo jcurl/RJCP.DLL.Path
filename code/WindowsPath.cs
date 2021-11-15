@@ -2,31 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Text;
-
-#if NETSTANDARD
-    using System.Diagnostics.CodeAnalysis;
-#endif
 
     /// <summary>
     /// Represents a parsed Window's path.
     /// </summary>
     public sealed class WindowsPath : Path
     {
-        private static readonly IList<string> EmptyStack =
-#if NETFRAMEWORK
-            new ReadOnlyCollection<string>(new string[0]);
-#else
-            Array.Empty<string>();
-#endif
-
-        private static readonly IList<string> RootStack =
-            new ReadOnlyCollection<string>(new string[] { string.Empty });
-
-        private IList<string> m_PathStack;
-
         // The number of times to iterate a parent path (..) at the beginning of the stack. This is an optimization that
         // can speed up appending operations.
         private int m_Parents;
@@ -61,15 +44,15 @@
                     throw new InvalidOperationException($"Inconsistent state when pinned - m_Parent = {m_Parents}");
             } else {
                 int l = 0;
-                for (int i = 0; i < m_PathStack.Count; i++) {
-                    if (string.CompareOrdinal("..", m_PathStack[i]) == 0) l++;
+                for (int i = 0; i < PathStack.Count; i++) {
+                    if (string.CompareOrdinal("..", PathStack[i]) == 0) l++;
                 }
                 if (m_Parents != l)
                     throw new InvalidOperationException($"Inconsistent state - m_Parent = {m_Parents}; counted {l}");
             }
 
-            if (m_Parents > m_PathStack.Count)
-                throw new InvalidOperationException($"Inconsistent state - m_Parent {m_Parents} more than count {m_PathStack.Count}");
+            if (m_Parents > PathStack.Count)
+                throw new InvalidOperationException($"Inconsistent state - m_Parent {m_Parents} more than count {PathStack.Count}");
         }
 
         // After ParsePath is finished, the properties are set:
@@ -120,14 +103,11 @@
         // - Path = Join("\", { RootVolume, PathStack })
         //   (the last argument is to be read as a new list, with RootVolume at the start)
 
-#if NETSTANDARD
-        [SuppressMessage("Style", "IDE0057:Use range operator", Justification = ".NET 4.0 compatibility")]
-#endif
         private void ParsePath(string path)
         {
             if (path == null) {
                 RootVolume = string.Empty;
-                m_PathStack = EmptyStack;
+                PathStack.InitializeEmpty();
                 m_Path = string.Empty;
                 return;
             }
@@ -135,7 +115,7 @@
             string trimmedPath = path.Trim();
             if (string.IsNullOrEmpty(trimmedPath)) {
                 RootVolume = string.Empty;
-                m_PathStack = EmptyStack;
+                PathStack.InitializeEmpty();
                 m_Path = string.Empty;
                 return;
             }
@@ -145,14 +125,14 @@
                 if (IsDirSepChar(trimmedPath[0])) {
                     // The '\' is the root, pinned, but no root volume.
                     IsPinned = true;
-                    m_PathStack = RootStack;
+                    PathStack.InitializeRoot();
                     m_Path = @"\";
                 } else if (trimmedPath[0] == '.') {
-                    m_PathStack = EmptyStack;
+                    PathStack.InitializeEmpty();
                     m_Path = string.Empty;
                 } else {
                     // The single character is a relative path.
-                    m_PathStack = new List<string>() { trimmedPath };
+                    PathStack.Initialize(trimmedPath);
                     m_Path = trimmedPath;
                 }
                 return;
@@ -164,7 +144,7 @@
 
             if (RootVolume == null) RootVolume = string.Empty;
             if (pathStart == trimmedPath.Length) {
-                m_PathStack = EmptyStack;
+                PathStack.InitializeEmpty();
                 return;
             }
 
@@ -173,27 +153,27 @@
                 pathStart++;
                 IsPinned = true;
                 if (trimmedPath.Length == pathStart) {
-                    m_PathStack = RootStack;
+                    PathStack.InitializeRoot();
                     return;
                 }
             }
 
-            m_PathStack = new List<string>();
+            List<string> stack = new List<string>();
             int ps = pathStart;
             for (int i = ps; i < trimmedPath.Length; i++) {
                 char c = trimmedPath[i];
                 if (IsDirSepChar(c)) {
-                    if (i > ps) m_PathStack.Add(trimmedPath.Substring(ps, i - ps));
+                    if (i > ps) stack.Add(trimmedPath.Substring(ps, i - ps));
                     ps = i + 1;
                 }
             }
             if (ps < trimmedPath.Length) {
-                m_PathStack.Add(trimmedPath.Substring(ps));
+                stack.Add(trimmedPath.Substring(ps));
             } else {
-                m_PathStack.Add(string.Empty);
+                stack.Add(string.Empty);
             }
 
-            NormalizePath();
+            NormalizePath(stack);
         }
 
         private static readonly string[] DriveLetter = {
@@ -219,9 +199,6 @@
             return 0;
         }
 
-#if NETSTANDARD
-        [SuppressMessage("Style", "IDE0057:Use range operator", Justification = ".NET 4.0 compatibility")]
-#endif
         private int CheckIsUnc(string path)
         {
             if (IsDirSepChar(path[0]) && IsDirSepChar(path[1])) {
@@ -273,7 +250,7 @@
             return c == '/' || c == '\\';
         }
 
-        private void NormalizePath()
+        private void NormalizePath(List<string> stack)
         {
             // Normalize the path, so that . and .. are removed where possible
             // . -> Remove the current element
@@ -281,15 +258,15 @@
 
             int i = 0;
             int l = 0;
-            int c = m_PathStack.Count;
+            int c = stack.Count;
             while (i < c) {
-                string node = m_PathStack[i];
+                string node = stack[i];
                 if (string.CompareOrdinal(".", node) == 0) {
                     if (IsPinned && c == 1) {
-                        m_PathStack[i] = string.Empty;
+                        PathStack.InitializeRoot();
                         return;
                     } else {
-                        m_PathStack.RemoveAt(i);
+                        stack.RemoveAt(i);
                         --c;
                     }
                 } else if (string.CompareOrdinal("..", node) == 0) {
@@ -299,15 +276,15 @@
                         l++;
                         i++;
                     } else {
-                        m_PathStack.RemoveAt(i);
-                        m_PathStack.RemoveAt(i - 1);
+                        stack.RemoveAt(i);
+                        stack.RemoveAt(i - 1);
                         c -= 2;
                         --i;
                         if (IsPinned && c == 0) {
                             if (IsUnc) {
-                                m_PathStack = EmptyStack;
+                                PathStack.InitializeEmpty();
                             } else {
-                                m_PathStack = RootStack;
+                                PathStack.InitializeRoot();
                             }
                             return;
                         }
@@ -316,6 +293,7 @@
                     i++;
                 }
             }
+            PathStack.Initialize(stack);
             m_Parents = l;
         }
 
@@ -400,31 +378,31 @@
             };
 
             if (winPath.IsPinned) {
-                newPath.m_PathStack = winPath.m_PathStack;
+                newPath.PathStack.Initialize(winPath.PathStack);
                 newPath.Check();
                 return newPath;
             }
 
-            int leftCount = m_PathStack.Count;
+            int leftCount = PathStack.Count;
             List<string> stack;
             int skip = 0;
 
             if (leftCount == 0) {
                 stack = new List<string>();
             } else {
-                bool leftTrim = string.IsNullOrEmpty(m_PathStack[leftCount - 1]) &&
-                    winPath.m_PathStack.Count > 0;
+                bool leftTrim = string.IsNullOrEmpty(PathStack[leftCount - 1]) &&
+                    winPath.PathStack.Count > 0;
                 if (leftTrim) leftCount--;
 
                 if (newPath.IsPinned && winPath.m_Parents > leftCount)
                     throw new ArgumentException("Invalid path when normalizing");
 
                 if (IsPinned) {
-                    if (leftCount == winPath.m_Parents && winPath.m_Parents == winPath.m_PathStack.Count) {
+                    if (leftCount == winPath.m_Parents && winPath.m_Parents == winPath.PathStack.Count) {
                         if (IsUnc) {
-                            newPath.m_PathStack = EmptyStack;
+                            newPath.PathStack.InitializeEmpty();
                         } else {
-                            newPath.m_PathStack = RootStack;
+                            newPath.PathStack.InitializeRoot();
                         }
                         newPath.Check();
                         return newPath;
@@ -437,35 +415,34 @@
                 }
 
                 if (!leftTrim && skip == 0) {
-                    stack = new List<string>(m_PathStack);
+                    stack = new List<string>(PathStack.Stack);
                     newPath.m_Parents = m_Parents;
                 } else {
                     stack = new List<string>();
                     for (int i = 0; i < leftCount - skip; i++) {
-                        stack.Add(m_PathStack[i]);
+                        stack.Add(PathStack[i]);
                     }
                     newPath.m_Parents = Math.Min(m_Parents, leftCount - skip);
                 }
             }
 
             if (skip == 0) {
-                stack.AddRange(winPath.m_PathStack);
+                stack.AddRange(winPath.PathStack.Stack);
                 newPath.m_Parents += winPath.m_Parents;
             } else {
-                for (int i = skip; i < winPath.m_PathStack.Count; i++) {
-                    stack.Add(winPath.m_PathStack[i]);
+                for (int i = skip; i < winPath.PathStack.Count; i++) {
+                    stack.Add(winPath.PathStack[i]);
                 }
                 newPath.m_Parents += Math.Max(winPath.m_Parents - skip, 0);
             }
-            newPath.m_PathStack = stack;
-
+            newPath.PathStack.Initialize(stack);
             newPath.Check();
             return newPath;
         }
 
         private static bool IsEmpty(WindowsPath path)
         {
-            return string.IsNullOrEmpty(path.RootVolume) && path.m_PathStack.Count == 0;
+            return string.IsNullOrEmpty(path.RootVolume) && path.PathStack.Count == 0;
         }
 
         /// <summary>
@@ -475,14 +452,14 @@
         public override Path GetParent()
         {
             if (IsPinned) {
-                if (m_PathStack.Count == 0) return this;
-                if (!IsUnc && m_PathStack.Count == 1 && string.IsNullOrEmpty(m_PathStack[0])) return this;
+                if (PathStack.Count == 0) return this;
+                if (!IsUnc && PathStack.Count == 1 && string.IsNullOrEmpty(PathStack[0])) return this;
             }
-            if (m_PathStack.Count == 0 && IsPinned) return this;
+            if (PathStack.Count == 0 && IsPinned) return this;
 
             bool appendParent = false;
-            int nodes = m_PathStack.Count;
-            if (nodes > 0 && string.IsNullOrEmpty(m_PathStack[nodes - 1])) nodes--;
+            int nodes = PathStack.Count;
+            if (nodes > 0 && string.IsNullOrEmpty(PathStack[nodes - 1])) nodes--;
 
             WindowsPath newPath = new WindowsPath {
                 IsDos = IsDos,
@@ -494,9 +471,9 @@
             if (IsPinned) {
                 if (nodes == 1) {
                     if (IsUnc) {
-                        newPath.m_PathStack = EmptyStack;
+                        newPath.PathStack.InitializeEmpty();
                     } else {
-                        newPath.m_PathStack = RootStack;
+                        newPath.PathStack.InitializeRoot();
                     }
                     return newPath;
                 } else if (nodes > 1) {
@@ -512,22 +489,23 @@
 
             if (nodes == 0) {
                 if (appendParent) {
-                    newPath.m_PathStack = new List<string>() { ".." };
+                    newPath.PathStack.Initialize("..");
                     newPath.m_Parents = 1;
                 } else {
-                    newPath.m_PathStack = EmptyStack;
+                    newPath.PathStack.InitializeEmpty();
                 }
             } else {
-                newPath.m_PathStack = new List<string>();
+                List<string> stack = new List<string>();
                 for (int i = 0; i < nodes; i++) {
-                    newPath.m_PathStack.Add(m_PathStack[i]);
+                    stack.Add(PathStack[i]);
                 }
                 if (appendParent) {
-                    newPath.m_PathStack.Add("..");
+                    stack.Add("..");
                     newPath.m_Parents = m_Parents + 1;
                 } else {
                     newPath.m_Parents = m_Parents;
                 }
+                newPath.PathStack.Initialize(stack);
             }
             newPath.Check();
             return newPath;
@@ -581,16 +559,16 @@
             // | X:\foo | X:\bar | ..\foo | X:\bar + ..\foo = X:\foo |
             // | X:\foo | Y:\bar | X:\foo | Y:\bar + X:\foo = X:\foo |
 
-            int leftLen = GetStackLength(m_PathStack);
-            int rightLen = GetStackLength(basePath.m_PathStack);
+            int leftLen = PathStack.TrimmedLength();
+            int rightLen = basePath.PathStack.TrimmedLength();
 
             int match = -1;
             int pos = m_Parents < basePath.m_Parents ? m_Parents : basePath.m_Parents;
 
             if (caseSensitive) {
                 while (pos < leftLen && pos < rightLen) {
-                    string left = m_PathStack[pos];
-                    string right = basePath.m_PathStack[pos];
+                    string left = PathStack[pos];
+                    string right = basePath.PathStack[pos];
 
                     if (string.CompareOrdinal(left, right) != 0) {
                         match = pos;
@@ -600,8 +578,8 @@
                 }
             } else {
                 while (pos < leftLen && pos < rightLen) {
-                    string left = m_PathStack[pos];
-                    string right = basePath.m_PathStack[pos];
+                    string left = PathStack[pos];
+                    string right = basePath.PathStack[pos];
 
                     if (!left.Equals(right, StringComparison.OrdinalIgnoreCase)) {
                         match = pos;
@@ -620,26 +598,18 @@
                 RootVolume = string.Empty
             };
 
-            newPath.m_PathStack = new List<string>();
-
+            List<string> stack = new List<string>();
             newPath.m_Parents = rightLen - match;
             for (int i = 0; i < newPath.m_Parents; i++) {
-                newPath.m_PathStack.Add("..");
+                stack.Add("..");
             }
 
             for (int i = match; i < leftLen; i++) {
-                newPath.m_PathStack.Add(m_PathStack[i]);
+                stack.Add(PathStack[i]);
             }
-
+            newPath.PathStack.Initialize(stack);
             newPath.Check();
             return newPath;
-        }
-
-        private static int GetStackLength(IList<string> pathStack)
-        {
-            if (pathStack.Count == 0) return 0;
-            if (string.IsNullOrEmpty(pathStack[pathStack.Count - 1])) return pathStack.Count - 1;
-            return pathStack.Count;
         }
 
         /// <summary>
@@ -661,14 +631,14 @@
                 RootVolume = RootVolume
             };
 
-            if (m_PathStack.Count == 1) {
-                newPath.m_PathStack = EmptyStack;
+            if (PathStack.Count == 1) {
+                newPath.PathStack.InitializeEmpty();
             } else {
                 List<string> stack = new List<string>();
-                for (int i = 0; i < m_PathStack.Count - 1; i++) {
-                    stack.Add(m_PathStack[i]);
+                for (int i = 0; i < PathStack.Count - 1; i++) {
+                    stack.Add(PathStack[i]);
                 }
-                newPath.m_PathStack = stack;
+                newPath.PathStack.Initialize(stack);
                 newPath.m_Parents = m_Parents;
             }
             newPath.Check();
@@ -683,9 +653,9 @@
         /// </returns>
         public override bool IsTrimmed()
         {
-            if (m_PathStack.Count == 0) return true;
-            if (IsPinned && !IsUnc && m_PathStack.Count == 1) return true;
-            if (!string.IsNullOrEmpty(m_PathStack[m_PathStack.Count - 1]))
+            if (PathStack.Count == 0) return true;
+            if (IsPinned && !IsUnc && PathStack.Count == 1) return true;
+            if (!string.IsNullOrEmpty(PathStack[PathStack.Count - 1]))
                 return true;
 
             return false;
@@ -707,13 +677,13 @@
 
             StringBuilder path = new StringBuilder();
             path.Append(RootVolume);
-            if (m_PathStack.Count > 0) {
+            if (PathStack.Count > 0) {
                 if (IsPinned) path.Append('\\');
 
-                if (m_PathStack.Count == 1) {
-                    path.Append(m_PathStack[0]);
-                } else if (m_PathStack.Count > 1) {
-                    path.Append(string.Join(@"\", m_PathStack));
+                if (PathStack.Count == 1) {
+                    path.Append(PathStack[0]);
+                } else if (PathStack.Count > 1) {
+                    path.Append(string.Join(@"\", PathStack.Stack));
                 }
             }
 

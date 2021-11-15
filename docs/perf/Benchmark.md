@@ -31,20 +31,20 @@ Intel Core i7-6700T CPU 2.80GHz (Skylake), 1 CPU(s), 8 logical and 4 physical co
 
 | Type                            | Method          | mean (Net48) | stderr | mean (NetCore31) | stderr |
 |:--------------------------------|:----------------|-------------:|-------:|-----------------:|-------:|
-| WindowsPathAppendBenchmark      | DosDrive        | 129.07       | 0.44   | 98.84            | 0.37   |
-| WindowsPathAppendBenchmark      | DosDriveAbs     | 6.25         | 0.02   | 7.57             | 0.03   |
-| WindowsPathAppendBenchmark      | UncShare        | 127.87       | 0.41   | 95.63            | 0.32   |
-| WindowsPathAppendBenchmark      | RelativePath    | 130.53       | 0.51   | 99.87            | 0.39   |
-| WindowsPathInstantiateBenchmark | DosDrive        | 70.70        | 0.25   | 69.64            | 0.10   |
-| WindowsPathInstantiateBenchmark | UncShare        | 235.17       | 0.62   | 225.36           | 0.86   |
-| WindowsPathInstantiateBenchmark | UncSharePartial | 123.60       | 0.48   | 112.01           | 0.21   |
-| WindowsPathInstantiateBenchmark | RelativePath    | 162.53       | 0.67   | 150.80           | 0.55   |
-| WindowsPathParentBenchmark      | DosParent       | 23.02        | 0.08   | 22.45            | 0.06   |
-| WindowsPathParentBenchmark      | UncParent       | 18.20        | 0.06   | 18.74            | 0.08   |
-| WindowsPathParentBenchmark      | DosParentRoot   | 17.23        | 0.05   | 16.19            | 0.07   |
-| WindowsPathParentBenchmark      | UncParentRoot   | 5.36         | 0.03   | 4.41             | 0.03   |
-| WindowsPathParentBenchmark      | RelativeParent  | 38.28        | 0.10   | 38.44            | 0.10   |
-| WindowsPathRelativeBenchmark    | DosRelative     | 94.67        | 0.42   | 91.45            | 0.35   |
+| WindowsPathAppendBenchmark      | DosDrive        | 129.28       | 0.63   | 99.56            | 0.44   |
+| WindowsPathAppendBenchmark      | DosDriveAbs     | 6.44         | 0.03   | 7.12             | 0.02   |
+| WindowsPathAppendBenchmark      | UncShare        | 128.88       | 0.15   | 96.64            | 0.38   |
+| WindowsPathAppendBenchmark      | RelativePath    | 127.09       | 0.47   | 99.18            | 0.31   |
+| WindowsPathInstantiateBenchmark | DosDrive        | 72.64        | 0.23   | 65.09            | 0.23   |
+| WindowsPathInstantiateBenchmark | UncShare        | 225.53       | 0.92   | 220.62           | 0.78   |
+| WindowsPathInstantiateBenchmark | UncSharePartial | 122.27       | 0.41   | 112.43           | 0.45   |
+| WindowsPathInstantiateBenchmark | RelativePath    | 148.12       | 0.53   | 149.02           | 0.48   |
+| WindowsPathParentBenchmark      | DosParent       | 15.50        | 0.06   | 15.02            | 0.06   |
+| WindowsPathParentBenchmark      | UncParent       | 14.15        | 0.06   | 12.89            | 0.05   |
+| WindowsPathParentBenchmark      | DosParentRoot   | 6.34         | 0.03   | 6.34             | 0.04   |
+| WindowsPathParentBenchmark      | UncParentRoot   | 0.39         | 0.01   | 0.84             | 0.00   |
+| WindowsPathParentBenchmark      | RelativeParent  | 38.20        | 0.02   | 37.54            | 0.07   |
+| WindowsPathRelativeBenchmark    | DosRelative     | 90.02        | 0.45   | 78.57            | 0.26   |
 
 While the software is identical, the compilation and execution is generally 20-30% faster on .NET Core.
 

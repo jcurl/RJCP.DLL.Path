@@ -1,6 +1,7 @@
 namespace RJCP.IO
 {
     using System;
+    using Internal;
 
     /// <summary>
     /// A representation of a file system path that is operating system agnostic.
@@ -112,5 +113,11 @@ namespace RJCP.IO
         /// Returns <see langword="true"/> if this path is trimmed; otherwise, <see langword="false"/>.
         /// </returns>
         public abstract bool IsTrimmed();
+
+        /// <summary>
+        /// Gets the path stack.
+        /// </summary>
+        /// <value>The path stack representing each folder and leaf node in the path.</value>
+        protected PathStack PathStack { get; } = new PathStack();
     }
 }
