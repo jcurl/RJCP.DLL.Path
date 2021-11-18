@@ -154,6 +154,7 @@
             }
         }
 
+        [TestCase(@"\", @"\")]
         [TestCase("C:", "C:")]
         [TestCase(@"C:\", @"C:\")]
         [TestCase(@"C:\foo", @"C:\foo")]
@@ -284,6 +285,7 @@
         [TestCase(@"A\B\C", @"\\srv\sh\A\B\C", @"A\B\C", @"\\srv\sh\A\B\C\A\B\C")] // \\srv\sh\A\B\C + A\B\C = \\srv\sh\A\B\C\A\B\C (not A\B\C)
         [TestCase(@"\\srv\sh\A\B\C", @"A\B\C", @"\\srv\sh\A\B\C")]
         [TestCase(@"\\SRV\SH\A\B\C", @"\\srv\sh\A\B\C", "", @"\\srv\sh\A\B\C")]  // Ignore case
+        [TestCase(@"A\B\C", @"A\b\c", "", @"A\b\c")]
         public void GetRelative(string path, string basePath, string expected, string append = null)
         {
             WindowsPath p = new WindowsPath(path);
@@ -420,6 +422,7 @@
         [TestCase("..", @"..\foo", @"..\..\foo")]
         [TestCase("..", @"..\foo\bar", @"..\..\foo\bar")]
         [TestCase(@"..\..", @"..\foo\bar", @"..\..\..\foo\bar")]
+        [TestCase(@"\", "..", null)]
         public void Append(string path, string extend, string expected)
         {
             WindowsPath p = new WindowsPath(path);

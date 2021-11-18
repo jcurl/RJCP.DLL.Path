@@ -40,7 +40,7 @@ namespace RJCP.IO
         public static Path ToPath(string path)
         {
             if (OSInfo.IsWinNT()) return new WindowsPath(path);
-            throw new PlatformNotSupportedException();
+            return new UnixPath(path);
         }
 
         /// <summary>

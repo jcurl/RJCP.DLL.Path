@@ -51,10 +51,16 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="UnixPathAppendBenchmark.cs" />
+    <Compile Include="UnixPathInstantiateBenchmark.cs" />
+    <Compile Include="UnixPathParentBenchmark.cs" />
+    <Compile Include="UnixPathRelativeBenchmark.cs" />
+    <Compile Include="UnixPathTrimBenchmark.cs" />
     <Compile Include="WindowsPathAppendBenchmark.cs" />
     <Compile Include="WindowsPathParentBenchmark.cs" />
     <Compile Include="WindowsPathInstantiateBenchmark.cs" />
     <Compile Include="WindowsPathRelativeBenchmark.cs" />
+    <Compile Include="WindowsPathTrimBenchmark.cs" />
   </ItemGroup>
 
 </Project>

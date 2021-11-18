@@ -54,6 +54,7 @@
     <Compile Include="Internal\PathStack.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Path.cs" />
+    <Compile Include="UnixPath.cs" />
     <Compile Include="WindowsPath.cs" />
   </ItemGroup>
 

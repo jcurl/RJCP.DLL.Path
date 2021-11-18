@@ -6,28 +6,27 @@
     using System.Text;
 
     /// <summary>
-    /// Represents a parsed Window's path.
+    /// Represents a parsed Posix path.
     /// </summary>
-    public sealed class WindowsPath : Path
+    public sealed class UnixPath : Path
     {
         // The number of times to iterate a parent path (..) at the beginning of the stack. This is an optimization that
         // can speed up appending operations.
         private int m_Parents;
 
-        private WindowsPath() { }
+        private UnixPath()
+        {
+            RootVolume = string.Empty;
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WindowsPath"/> class.
+        /// Initializes a new instance of the <see cref="UnixPath"/> class.
         /// </summary>
         /// <param name="path">The path that should be parsed and normalized.</param>
         /// <exception cref="ArgumentException">
-        /// <paramref name="path"/> is a DOS path, but the drive letter is invalid.
-        /// <para>- or -</para>
-        /// <paramref name="path"/> is a UNC path, but is too short, or has an invalid UNC character.
-        /// <para>- or -</para>
-        /// When normalizing <paramref name="path"/>, the parent directory is on the root volume (e.g. <c>C:\..</c>).
+        /// When normalizing <paramref name="path"/>, the parent directory is on the root volume (e.g. <c>\..</c>).
         /// </exception>
-        public WindowsPath(string path)
+        public UnixPath(string path) : this()
         {
             ParsePath(path);
             Check();
@@ -38,6 +37,11 @@
         {
             // Check consistency rules for the path, to ensure that any changes to this code doesn't cause regressions.
             // This is not done in RELEASE mode for performance.
+            if (RootVolume == null)
+                throw new InvalidOperationException("Inconsistent state - RootVolume is null");
+
+            if (!string.IsNullOrEmpty(RootVolume))
+                throw new InvalidOperationException($"Inconsistent state - RootVolume = {RootVolume}");
 
             if (IsPinned) {
                 if (m_Parents != 0)
@@ -60,7 +64,6 @@
         private void ParsePath(string path)
         {
             if (path == null) {
-                RootVolume = string.Empty;
                 PathStack.InitializeEmpty();
                 m_Path = string.Empty;
                 return;
@@ -68,19 +71,17 @@
 
             string trimmedPath = path.Trim();
             if (string.IsNullOrEmpty(trimmedPath)) {
-                RootVolume = string.Empty;
                 PathStack.InitializeEmpty();
                 m_Path = string.Empty;
                 return;
             }
 
             if (trimmedPath.Length == 1) {
-                RootVolume = string.Empty;
                 if (IsDirSepChar(trimmedPath[0])) {
-                    // The '\' is the root, pinned, but no root volume.
+                    // The '/' is the root, pinned, but no root volume.
                     IsPinned = true;
                     PathStack.InitializeRoot();
-                    m_Path = @"\";
+                    m_Path = "/";
                 } else if (trimmedPath[0] == '.') {
                     PathStack.InitializeEmpty();
                     m_Path = string.Empty;
@@ -93,23 +94,16 @@
             }
 
             // Where the unpinned path starts after finding the DOS letter or UNC path.
-            int pathStart = CheckIsDos(trimmedPath);
-            if (pathStart == 0) pathStart = CheckIsUnc(trimmedPath);
-
-            if (RootVolume == null) RootVolume = string.Empty;
-            if (pathStart == trimmedPath.Length) {
-                PathStack.InitializeEmpty();
-                return;
-            }
+            int pathStart = 0;
 
             // From here is the remaining path, possibly starting with the '\' if it's pinned,
-            if (IsDirSepChar(trimmedPath[pathStart])) {
-                pathStart++;
+            if (IsDirSepChar(trimmedPath[0])) {
                 IsPinned = true;
-                if (trimmedPath.Length == pathStart) {
+                if (trimmedPath.Length == 1) {
                     PathStack.InitializeRoot();
                     return;
                 }
+                pathStart = 1;
             }
 
             List<string> stack = new List<string>();
@@ -130,78 +124,9 @@
             NormalizePath(stack);
         }
 
-        private static readonly string[] DriveLetter = {
-            "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:",
-            "N:", "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"
-        };
-
-        private int CheckIsDos(string path)
-        {
-            if (path[1] == ':') {
-                // Check for DOS X:
-                char d = path[0];
-                if (d >= 'a' && d <= 'z') {
-                    RootVolume = DriveLetter[d - 'a'];
-                } else if (d >= 'A' && d <= 'Z') {
-                    RootVolume = DriveLetter[d - 'A'];
-                } else {
-                    throw new ArgumentException("Invalid path", nameof(path));
-                }
-                IsDos = true;
-                return 2;
-            }
-            return 0;
-        }
-
-        private int CheckIsUnc(string path)
-        {
-            if (IsDirSepChar(path[0]) && IsDirSepChar(path[1])) {
-                if (path.Length == 2)
-                    throw new ArgumentException("Invalid UNC path", nameof(path));
-
-                // Check for UNC \\server\share paths.
-                int s = 2;
-                for (int p = 2; p < path.Length; p++) {
-                    char c = path[p];
-                    if (IsDirSepChar(c)) {
-                        if (p == s) {
-                            // The 's' ensures that there is at least one character after the last '\' character.
-                            throw new ArgumentException("Invalid UNC path", nameof(path));
-                        }
-                        if (s > 2) {
-                            // We've found the UNC path
-                            RootVolume = string.Format(@"\\{0}\{1}",
-                                path.Substring(2, s - 3),
-                                path.Substring(s, p - s));
-                            IsUnc = true;
-                            IsPinned = true;
-                            return p;
-                        } else {
-                            s = p + 1;
-                        }
-                    }
-                }
-
-                if (!IsUnc) {
-                    // We didn't find the final '\' separator, so this is the root volume
-                    if (s == 2) {
-                        RootVolume = string.Format(@"\\{0}", path.Substring(2));
-                    } else {
-                        RootVolume = string.Format(@"\\{0}\{1}",
-                            path.Substring(2, s - 3),
-                            path.Substring(s));
-                    }
-                    IsPinned = true;
-                    IsUnc = true;
-                    return path.Length;
-                }
-            }
-            return 0;
-        }
-
         private static bool IsDirSepChar(char c)
         {
-            return c == '/' || c == '\\';
+            return c == '/';
         }
 
         private void NormalizePath(List<string> stack)
@@ -235,11 +160,7 @@
                         c -= 2;
                         --i;
                         if (IsPinned && c == 0) {
-                            if (IsUnc) {
-                                PathStack.InitializeEmpty();
-                            } else {
-                                PathStack.InitializeRoot();
-                            }
+                            PathStack.InitializeRoot();
                             return;
                         }
                     }
@@ -252,23 +173,6 @@
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is a UNC style path.
-        /// </summary>
-        /// <value>
-        /// Returns <see langword="true"/> if this instance is a UNC path (Universal Naming Convention); otherwise,
-        /// <see langword="false"/>.
-        /// </value>
-        public bool IsUnc { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is DOS style path.
-        /// </summary>
-        /// <value>
-        /// Returns <see langword="true"/> if this instance is a DOS style path; otherwise, <see langword="false"/>.
-        /// </value>
-        public bool IsDos { get; private set; }
-
-        /// <summary>
         /// Creates the path. To be implemented by the classes deriving from this abstract class.
         /// </summary>
         /// <param name="path">The path that is to be parsed.</param>
@@ -278,7 +182,7 @@
         /// </returns>
         protected override Path CreatePath(string path)
         {
-            return new WindowsPath(path);
+            return new UnixPath(path);
         }
 
         /// <summary>
@@ -286,87 +190,53 @@
         /// </summary>
         /// <param name="path">The path object to append to this object.</param>
         /// <returns>The appended <see cref="Path"/>.</returns>
-        /// <exception cref="ArgumentException">
-        /// Can't append unpinned paths with different root volumes.
-        /// </exception>
+        /// <exception cref="ArgumentException">Invalid path when normalizing.</exception>
         /// <remarks>
         /// Appends the <paramref name="path"/> to this object and returns a new object if there is a change.
         /// <para>Appending a new path has the following rules.</para>
-        /// <list type="bullet">
-        /// <item>
-        /// If the <paramref name="path"/> to append has no <see cref="Path.RootVolume"/> and is not
-        /// <see cref="Path.IsPinned"/>, then the result is this path, plus the new path.
-        /// </item>
-        /// <item>
-        /// If the <paramref name="path"/> is <see cref="IsDos"/>, both must have the same <see cref="Path.RootVolume"/>
-        /// to be appended. If <paramref name="path"/> is <see cref="Path.IsPinned"/>, then the
-        /// </item>
-        /// </list>
         /// </remarks>
         public override Path Append(Path path)
         {
-            // Both must be a Windows path
-            if (!(path is WindowsPath winPath)) return this;
+            // Both must be a Unix path
+            if (!(path is UnixPath unixPath)) return this;
 
             // Rule 1
-            if (IsEmpty(winPath)) return this;
+            if (IsEmpty(unixPath)) return this;
             if (IsEmpty(this)) return path;
 
-            if (winPath.IsPinned) {
-                if (!string.IsNullOrEmpty(winPath.RootVolume)) return path; // Rule 2
-                if (string.IsNullOrEmpty(RootVolume)) return path;          // Rule 4
-            }
+            // Rule 4
+            if (unixPath.IsPinned) return path;
 
-            // Rule 3
-            if (!string.IsNullOrEmpty(RootVolume) &&
-                !winPath.IsPinned && !string.IsNullOrEmpty(winPath.RootVolume) &&
-                !winPath.RootVolume.Equals(RootVolume, StringComparison.OrdinalIgnoreCase)) {
-                throw new ArgumentException("Can't append unpinned paths with different root volumes", nameof(path));
-            }
-
-            WindowsPath newPath = new WindowsPath {
-                IsDos = IsDos || winPath.IsDos,
-                IsUnc = IsUnc || winPath.IsUnc,
-                IsPinned = IsPinned || winPath.IsPinned,
-                RootVolume = string.IsNullOrEmpty(RootVolume) ? winPath.RootVolume : RootVolume
+            UnixPath newPath = new UnixPath {
+                IsPinned = IsPinned || unixPath.IsPinned,
             };
-
-            if (winPath.IsPinned) {
-                newPath.PathStack.Initialize(winPath.PathStack);
-                newPath.Check();
-                return newPath;
-            }
 
             int leftCount = PathStack.Count;
             List<string> stack;
             int skip = 0;
 
             if (leftCount == 0) {
-                newPath.PathStack.Initialize(winPath.PathStack);
-                newPath.m_Parents = winPath.m_Parents;
+                newPath.PathStack.Initialize(unixPath.PathStack);
+                newPath.m_Parents = unixPath.m_Parents;
             } else {
                 bool leftTrim = string.IsNullOrEmpty(PathStack[leftCount - 1]) &&
-                    winPath.PathStack.Count > 0;
+                    unixPath.PathStack.Count > 0;
                 if (leftTrim) leftCount--;
 
-                if (newPath.IsPinned && winPath.m_Parents > leftCount)
+                if (newPath.IsPinned && unixPath.m_Parents > leftCount)
                     throw new ArgumentException("Invalid path when normalizing");
 
                 if (IsPinned) {
-                    if (leftCount == winPath.m_Parents && winPath.m_Parents == winPath.PathStack.Count) {
-                        if (IsUnc) {
-                            newPath.PathStack.InitializeEmpty();
-                        } else {
-                            newPath.PathStack.InitializeRoot();
-                        }
+                    if (leftCount == unixPath.m_Parents && unixPath.m_Parents == unixPath.PathStack.Count) {
+                        newPath.PathStack.InitializeRoot();
                         newPath.Check();
                         return newPath;
                     }
                 }
 
                 // Don't copy node paths, that we'll remove again later by normalization.
-                if (winPath.m_Parents > 0) {
-                    skip = Math.Min(leftCount - m_Parents, winPath.m_Parents);
+                if (unixPath.m_Parents > 0) {
+                    skip = Math.Min(leftCount - m_Parents, unixPath.m_Parents);
                 }
 
                 if (!leftTrim && skip == 0) {
@@ -381,24 +251,23 @@
                 }
 
                 if (skip == 0) {
-                    stack.AddRange(winPath.PathStack.Stack);
-                    newPath.m_Parents += winPath.m_Parents;
+                    stack.AddRange(unixPath.PathStack.Stack);
+                    newPath.m_Parents += unixPath.m_Parents;
                 } else {
-                    for (int i = skip; i < winPath.PathStack.Count; i++) {
-                        stack.Add(winPath.PathStack[i]);
+                    for (int i = skip; i < unixPath.PathStack.Count; i++) {
+                        stack.Add(unixPath.PathStack[i]);
                     }
-                    newPath.m_Parents += Math.Max(winPath.m_Parents - skip, 0);
+                    newPath.m_Parents += Math.Max(unixPath.m_Parents - skip, 0);
                 }
                 newPath.PathStack.Initialize(stack);
             }
-
             newPath.Check();
             return newPath;
         }
 
-        private static bool IsEmpty(WindowsPath path)
+        private static bool IsEmpty(UnixPath path)
         {
-            return string.IsNullOrEmpty(path.RootVolume) && path.PathStack.Count == 0;
+            return path.PathStack.Count == 0;
         }
 
         /// <summary>
@@ -409,27 +278,20 @@
         {
             if (IsPinned) {
                 if (PathStack.Count == 0) return this;
-                if (!IsUnc && PathStack.Count == 1 && string.IsNullOrEmpty(PathStack[0])) return this;
+                if (PathStack.Count == 1 && string.IsNullOrEmpty(PathStack[0])) return this;
             }
 
             bool appendParent = false;
             int nodes = PathStack.Count;
             if (nodes > 0 && string.IsNullOrEmpty(PathStack[nodes - 1])) nodes--;
 
-            WindowsPath newPath = new WindowsPath {
-                IsDos = IsDos,
-                IsUnc = IsUnc,
+            UnixPath newPath = new UnixPath {
                 IsPinned = IsPinned,
-                RootVolume = RootVolume
             };
 
             if (IsPinned) {
                 if (nodes == 1) {
-                    if (IsUnc) {
-                        newPath.PathStack.InitializeEmpty();
-                    } else {
-                        newPath.PathStack.InitializeRoot();
-                    }
+                    newPath.PathStack.InitializeRoot();
                     return newPath;
                 } else if (nodes > 1) {
                     nodes--;
@@ -478,41 +340,21 @@
         public override Path GetRelative(Path basePath)
         {
             // Both must be a Windows path
-            if (!(basePath is WindowsPath winPath)) return this;
-            return GetRelative(winPath, false);
+            if (!(basePath is UnixPath winPath)) return this;
+            return GetRelativeUnix(winPath);
         }
 
-        /// <summary>
-        /// Gets the relative path given a base path.
-        /// </summary>
-        /// <param name="basePath">The base path, which will be used to get the relative path.</param>
-        /// <param name="caseSensitive">
-        /// Set to <see langword="true"/> if the comparison should be done case sensitive. Some Windows file systems are
-        /// case sensitive, but most are not.
-        /// </param>
-        /// <returns>
-        /// A new <see cref="Path"/> that is relative to the <paramref name="basePath"/> that returns this path if
-        /// appended. i.e. it returns the path that must be applied to the <paramref name="basePath"/> to get this path.
-        /// The result is trimmed. Comparisons are done case sensitive as per <paramref name="caseSensitive"/>. In all
-        /// cases, the root volume (the drive letter, or UNC path) is always compared with case insensitive.
-        /// </returns>
-        public Path GetRelative(WindowsPath basePath, bool caseSensitive)
+        private Path GetRelativeUnix(UnixPath basePath)
         {
-            // If the root volumes differ, then they cannot be compared. Return this path, as there is no relative path
-            // to this path. Even if they're both UNC and equivalent (e.g. \\srv\ and \\srv), then we can still return
-            // this object, making for a fast check.
-            if (!RootVolume.Equals(basePath.RootVolume, StringComparison.OrdinalIgnoreCase)) return this;
-
             // If both are pinned, or both are unpinned, we can calculate the relative difference between the two. Else
             // return the current object.
             if (IsPinned != basePath.IsPinned) return this;
 
-            // | this   | base   | result | Notes                    |
-            // |--------|--------|--------|--------------------------|
-            // | X:\foo | X:\    | foo    | X:\ + foo = X:\foo       |
-            // | X:\    | X:\foo | ..     | X:\foo + .. = X:\        |
-            // | X:\foo | X:\bar | ..\foo | X:\bar + ..\foo = X:\foo |
-            // | X:\foo | Y:\bar | X:\foo | Y:\bar + X:\foo = X:\foo |
+            // | this | base | result | Notes                |
+            // |------|------|--------|----------------------|
+            // | \foo | \    | foo    | \ + foo = \foo       |
+            // | \    | \foo | ..     | \foo + .. = \        |
+            // | \foo | \bar | ..\foo | \bar + ..\foo = \foo |
 
             int leftLen = PathStack.TrimmedLength();
             int rightLen = basePath.PathStack.TrimmedLength();
@@ -520,37 +362,21 @@
             int match = -1;
             int pos = m_Parents < basePath.m_Parents ? m_Parents : basePath.m_Parents;
 
-            if (caseSensitive) {
-                while (pos < leftLen && pos < rightLen) {
-                    string left = PathStack[pos];
-                    string right = basePath.PathStack[pos];
+            while (pos < leftLen && pos < rightLen) {
+                string left = PathStack[pos];
+                string right = basePath.PathStack[pos];
 
-                    if (string.CompareOrdinal(left, right) != 0) {
-                        match = pos;
-                        break;
-                    }
-                    pos++;
+                if (string.CompareOrdinal(left, right) != 0) {
+                    match = pos;
+                    break;
                 }
-            } else {
-                while (pos < leftLen && pos < rightLen) {
-                    string left = PathStack[pos];
-                    string right = basePath.PathStack[pos];
-
-                    if (!left.Equals(right, StringComparison.OrdinalIgnoreCase)) {
-                        match = pos;
-                        break;
-                    }
-                    pos++;
-                }
+                pos++;
             }
 
             if (match == -1) match = pos;      // The length of the shortest stack
 
-            WindowsPath newPath = new WindowsPath {
-                IsDos = false,
-                IsUnc = false,
+            UnixPath newPath = new UnixPath {
                 IsPinned = false,
-                RootVolume = string.Empty
             };
 
             List<string> stack = new List<string>();
@@ -579,11 +405,8 @@
         {
             if (IsTrimmed()) return this;
 
-            WindowsPath newPath = new WindowsPath {
-                IsDos = IsDos,
-                IsUnc = IsUnc,
+            UnixPath newPath = new UnixPath {
                 IsPinned = IsPinned,
-                RootVolume = RootVolume
             };
 
             newPath.PathStack.InitializeTrimmed(PathStack);
@@ -601,7 +424,7 @@
         public override bool IsTrimmed()
         {
             if (PathStack.Count == 0) return true;
-            if (IsPinned && !IsUnc && PathStack.Count == 1) return true;
+            if (IsPinned && PathStack.Count == 1) return true;
             if (!string.IsNullOrEmpty(PathStack[PathStack.Count - 1]))
                 return true;
 
@@ -623,10 +446,9 @@
 #endif
 
             StringBuilder path = new StringBuilder();
-            path.Append(RootVolume);
             if (PathStack.Count > 0) {
-                if (IsPinned) path.Append('\\');
-                path.Append(string.Join(@"\", PathStack.Stack));
+                if (IsPinned) path.Append('/');
+                path.Append(string.Join("/", PathStack.Stack));
             }
 
             m_Path = path.ToString();

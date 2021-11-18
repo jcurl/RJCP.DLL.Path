@@ -80,6 +80,25 @@
         }
 
         /// <summary>
+        /// Initializes the specified stack from another <see cref="PathStack"/> removing the last element.
+        /// </summary>
+        /// <param name="stack">The stack to initialize from.</param>
+        public void InitializeTrimmed(PathStack stack)
+        {
+            if (stack.Count == 1) {
+                m_PathStack = EmptyStack;
+                Count = 0;
+            } else {
+                List<string> newstack = new List<string>();
+                for (int i = 0; i < stack.Count - 1; i++) {
+                    newstack.Add(stack.m_PathStack[i]);
+                }
+                m_PathStack = newstack;
+                Count = newstack.Count;
+            }
+        }
+
+        /// <summary>
         /// Gets the number of elements (including the leaf element also if it's empty) in the path stack.
         /// </summary>
         /// <value>The number of elements (including the leaf element also if it's empty) in the path stack.</value>
