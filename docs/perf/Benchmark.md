@@ -31,32 +31,32 @@ Intel Core i7-6700T CPU 2.80GHz (Skylake), 1 CPU(s), 8 logical and 4 physical co
 
 | Type                            | Method          | mean (Net48) | stderr | mean (NetCore31) | stderr |
 |:--------------------------------|:----------------|-------------:|-------:|-----------------:|-------:|
-| UnixPathAppendBenchmark         | RootPath        | 125.74       | 0.42   | 94.44            | 0.26   |
-| UnixPathAppendBenchmark         | RelativePath    | 125.38       | 0.55   | 96.26            | 0.31   |
-| UnixPathInstantiateBenchmark    | FixedDrive      | 84.32        | 0.29   | 75.50            | 0.32   |
-| UnixPathInstantiateBenchmark    | RelativePath    | 153.15       | 0.49   | 136.79           | 0.50   |
-| UnixPathParentBenchmark         | Parent          | 17.93        | 0.05   | 17.86            | 0.10   |
-| UnixPathParentBenchmark         | ParentRoot      | 5.79         | 0.04   | 6.31             | 0.05   |
-| UnixPathParentBenchmark         | RelativeParent  | 41.23        | 0.18   | 38.71            | 0.23   |
-| UnixPathRelativeBenchmark       | PinnedRelative  | 80.23        | 0.29   | 74.32            | 0.29   |
-| UnixPathTrimBenchmark           | Trimmed         | 60.88        | 0.22   | 57.93            | 0.29   |
-| UnixPathTrimBenchmark           | NoTrim          | 4.67         | 0.04   | 4.02             | 0.02   |
-| WindowsPathAppendBenchmark      | DosDrive        | 133.32       | 0.50   | 103.43           | 0.36   |
-| WindowsPathAppendBenchmark      | DosDriveAbs     | 7.23         | 0.02   | 7.05             | 0.04   |
-| WindowsPathAppendBenchmark      | UncShare        | 131.64       | 0.56   | 99.99            | 0.34   |
-| WindowsPathAppendBenchmark      | RelativePath    | 133.73       | 0.52   | 100.03           | 0.35   |
-| WindowsPathInstantiateBenchmark | DosDrive        | 73.94        | 0.30   | 67.45            | 0.30   |
-| WindowsPathInstantiateBenchmark | UncShare        | 246.66       | 1.09   | 223.02           | 0.88   |
-| WindowsPathInstantiateBenchmark | UncSharePartial | 128.50       | 0.45   | 116.92           | 0.45   |
-| WindowsPathInstantiateBenchmark | RelativePath    | 151.59       | 0.37   | 139.10           | 0.45   |
-| WindowsPathParentBenchmark      | DosParent       | 18.60        | 0.09   | 18.86            | 0.09   |
-| WindowsPathParentBenchmark      | UncParent       | 15.80        | 0.04   | 17.11            | 0.08   |
-| WindowsPathParentBenchmark      | DosParentRoot   | 5.82         | 0.03   | 6.25             | 0.03   |
-| WindowsPathParentBenchmark      | UncParentRoot   | 0.48         | 0.02   | 0.72             | 0.02   |
-| WindowsPathParentBenchmark      | RelativeParent  | 41.54        | 0.16   | 39.00            | 0.13   |
-| WindowsPathRelativeBenchmark    | DosRelative     | 90.40        | 0.31   | 82.02            | 0.31   |
-| WindowsPathTrimBenchmark        | Trimmed         | 63.87        | 0.22   | 57.92            | 0.23   |
-| WindowsPathTrimBenchmark        | NoTrim          | 5.32         | 0.02   | 4.01             | 0.02   |
+| UnixPathAppendBenchmark         | RootPath        | 125.24       | 0.43   | 89.17            | 0.35   |
+| UnixPathAppendBenchmark         | RelativePath    | 125.44       | 0.41   | 93.22            | 0.30   |
+| UnixPathInstantiateBenchmark    | FixedDrive      | 84.22        | 0.25   | 70.72            | 0.29   |
+| UnixPathInstantiateBenchmark    | RelativePath    | 155.47       | 0.07   | 141.12           | 0.55   |
+| UnixPathParentBenchmark         | Parent          | 17.71        | 0.08   | 16.25            | 0.07   |
+| UnixPathParentBenchmark         | ParentRoot      | 5.72         | 0.03   | 6.37             | 0.04   |
+| UnixPathParentBenchmark         | RelativeParent  | 40.78        | 0.18   | 38.57            | 0.10   |
+| UnixPathRelativeBenchmark       | PinnedRelative  | 80.70        | 0.23   | 77.18            | 0.25   |
+| UnixPathTrimBenchmark           | Trimmed         | 60.50        | 0.23   | 57.07            | 0.21   |
+| UnixPathTrimBenchmark           | NoTrim          | 4.64         | 0.03   | 4.06             | 0.03   |
+| WindowsPathAppendBenchmark      | DosDrive        | 135.87       | 0.28   | 104.01           | 0.36   |
+| WindowsPathAppendBenchmark      | DosDriveAbs     | 7.00         | 0.02   | 7.20             | 0.04   |
+| WindowsPathAppendBenchmark      | UncShare        | 132.24       | 0.47   | 98.24            | 0.29   |
+| WindowsPathAppendBenchmark      | RelativePath    | 137.91       | 0.43   | 103.67           | 0.43   |
+| WindowsPathInstantiateBenchmark | DosDrive        | 76.31        | 0.04   | 71.47            | 0.28   |
+| WindowsPathInstantiateBenchmark | UncShare        | 228.26       | 0.74   | 224.01           | 0.80   |
+| WindowsPathInstantiateBenchmark | UncSharePartial | 126.51       | 0.26   | 115.83           | 0.44   |
+| WindowsPathInstantiateBenchmark | RelativePath    | 153.30       | 0.59   | 151.04           | 0.57   |
+| WindowsPathParentBenchmark      | DosParent       | 19.42        | 0.03   | 16.89            | 0.09   |
+| WindowsPathParentBenchmark      | UncParent       | 16.35        | 0.06   | 16.51            | 0.09   |
+| WindowsPathParentBenchmark      | DosParentRoot   | 6.46         | 0.03   | 5.65             | 0.03   |
+| WindowsPathParentBenchmark      | UncParentRoot   | 0.85         | 0.01   | 0.95             | 0.02   |
+| WindowsPathParentBenchmark      | RelativeParent  | 41.99        | 0.17   | 39.25            | 0.17   |
+| WindowsPathRelativeBenchmark    | DosRelative     | 89.89        | 0.20   | 81.96            | 0.20   |
+| WindowsPathTrimBenchmark        | Trimmed         | 59.76        | 0.23   | 57.83            | 0.23   |
+| WindowsPathTrimBenchmark        | NoTrim          | 5.07         | 0.01   | 4.55             | 0.03   |
 
 While the software is identical, the compilation and execution is generally 20-30% faster on .NET Core.
 
@@ -82,32 +82,32 @@ Intel Core i7-6700T CPU 2.80GHz (Skylake), 1 CPU(s), 2 logical and 2 physical co
 
 | Type                            | Method          | mean (Net48) | stderr | mean (NetCore31) | stderr |
 |:--------------------------------|:----------------|-------------:|-------:|-----------------:|-------:|
-| UnixPathAppendBenchmark         | RootPath        | 264.41       | 1.23   | 128.57           | 0.13   |
-| UnixPathAppendBenchmark         | RelativePath    | 285.76       | 0.52   | 127.89           | 0.24   |
-| UnixPathInstantiateBenchmark    | FixedDrive      | 170.51       | 0.78   | 92.97            | 0.19   |
-| UnixPathInstantiateBenchmark    | RelativePath    | 342.84       | 0.74   | 176.15           | 0.33   |
-| UnixPathParentBenchmark         | Parent          | 38.19        | 0.12   | 23.62            | 0.04   |
-| UnixPathParentBenchmark         | ParentRoot      | 13.06        | 0.01   | 6.67             | 0.01   |
-| UnixPathParentBenchmark         | RelativeParent  | 73.86        | 0.14   | 53.39            | 0.13   |
-| UnixPathRelativeBenchmark       | PinnedRelative  | 148.67       | 0.72   | 90.67            | 0.03   |
-| UnixPathTrimBenchmark           | Trimmed         | 101.07       | 0.34   | 71.94            | 0.10   |
-| UnixPathTrimBenchmark           | NoTrim          | 9.78         | 0.03   | 4.18             | 0.00   |
-| WindowsPathAppendBenchmark      | DosDrive        | 292.64       | 0.38   | 133.03           | 0.25   |
-| WindowsPathAppendBenchmark      | DosDriveAbs     | 10.17        | 0.02   | 8.10             | 0.02   |
-| WindowsPathAppendBenchmark      | UncShare        | 278.09       | 0.43   | 128.95           | 0.16   |
-| WindowsPathAppendBenchmark      | RelativePath    | 281.18       | 0.54   | 131.89           | 0.13   |
-| WindowsPathInstantiateBenchmark | DosDrive        | 169.98       | 0.31   | 88.69            | 0.34   |
-| WindowsPathInstantiateBenchmark | UncShare        | 492.72       | 0.37   | 259.51           | 0.24   |
-| WindowsPathInstantiateBenchmark | UncSharePartial | 253.72       | 0.26   | 144.24           | 0.07   |
-| WindowsPathInstantiateBenchmark | RelativePath    | 340.93       | 1.16   | 174.69           | 0.20   |
-| WindowsPathParentBenchmark      | DosParent       | 36.90        | 0.03   | 24.61            | 0.15   |
-| WindowsPathParentBenchmark      | UncParent       | 30.59        | 0.02   | 23.53            | 0.14   |
-| WindowsPathParentBenchmark      | DosParentRoot   | 13.19        | 0.05   | 6.73             | 0.01   |
-| WindowsPathParentBenchmark      | UncParentRoot   | 3.71         | 0.01   | 1.05             | 0.00   |
-| WindowsPathParentBenchmark      | RelativeParent  | 75.91        | 0.09   | 53.18            | 0.07   |
-| WindowsPathRelativeBenchmark    | DosRelative     | 194.73       | 0.46   | 98.52            | 0.06   |
-| WindowsPathTrimBenchmark        | Trimmed         | 96.80        | 0.25   | 73.65            | 0.14   |
-| WindowsPathTrimBenchmark        | NoTrim          | 10.12        | 0.01   | 4.94             | 0.01   |
+| UnixPathAppendBenchmark         | RootPath        | 274.02       | 0.18   | 126.11           | 0.18   |
+| UnixPathAppendBenchmark         | RelativePath    | 275.09       | 0.14   | 126.61           | 0.08   |
+| UnixPathInstantiateBenchmark    | FixedDrive      | 175.73       | 0.54   | 91.55            | 0.10   |
+| UnixPathInstantiateBenchmark    | RelativePath    | 347.09       | 0.25   | 177.97           | 0.18   |
+| UnixPathParentBenchmark         | Parent          | 35.30        | 0.06   | 23.15            | 0.08   |
+| UnixPathParentBenchmark         | ParentRoot      | 13.18        | 0.02   | 6.77             | 0.00   |
+| UnixPathParentBenchmark         | RelativeParent  | 73.97        | 0.20   | 51.42            | 0.10   |
+| UnixPathRelativeBenchmark       | PinnedRelative  | 147.97       | 0.52   | 88.67            | 0.25   |
+| UnixPathTrimBenchmark           | Trimmed         | 97.56        | 0.28   | 70.33            | 0.05   |
+| UnixPathTrimBenchmark           | NoTrim          | 9.84         | 0.05   | 4.10             | 0.01   |
+| WindowsPathAppendBenchmark      | DosDrive        | 289.21       | 0.96   | 133.08           | 0.38   |
+| WindowsPathAppendBenchmark      | DosDriveAbs     | 10.18        | 0.03   | 7.93             | 0.01   |
+| WindowsPathAppendBenchmark      | UncShare        | 279.78       | 0.34   | 133.97           | 0.10   |
+| WindowsPathAppendBenchmark      | RelativePath    | 283.56       | 0.44   | 132.33           | 0.09   |
+| WindowsPathInstantiateBenchmark | DosDrive        | 172.48       | 0.72   | 90.41            | 0.16   |
+| WindowsPathInstantiateBenchmark | UncShare        | 489.17       | 0.56   | 271.93           | 0.25   |
+| WindowsPathInstantiateBenchmark | UncSharePartial | 254.25       | 0.17   | 142.48           | 0.09   |
+| WindowsPathInstantiateBenchmark | RelativePath    | 347.83       | 0.17   | 182.89           | 0.13   |
+| WindowsPathParentBenchmark      | DosParent       | 37.45        | 0.11   | 24.32            | 0.07   |
+| WindowsPathParentBenchmark      | UncParent       | 31.12        | 0.02   | 20.86            | 0.04   |
+| WindowsPathParentBenchmark      | DosParentRoot   | 13.58        | 0.03   | 6.88             | 0.01   |
+| WindowsPathParentBenchmark      | UncParentRoot   | 3.70         | 0.03   | 1.05             | 0.00   |
+| WindowsPathParentBenchmark      | RelativeParent  | 76.88        | 0.21   | 51.62            | 0.07   |
+| WindowsPathRelativeBenchmark    | DosRelative     | 207.12       | 0.14   | 98.91            | 0.15   |
+| WindowsPathTrimBenchmark        | Trimmed         | 97.82        | 0.41   | 73.42            | 0.05   |
+| WindowsPathTrimBenchmark        | NoTrim          | 10.08        | 0.01   | 5.02             | 0.01   |
 
 The below results can't be compared with above, that they're a different
 machine type, but running Ubuntu and Mono.
@@ -130,31 +130,31 @@ Intel Core i7-4930K CPU 3.40GHz (Haswell), 1 CPU(s), 12 logical and 6 physical c
 
 | Type                            | Method          | mean (Net48) | stderr | mean (NetCore31) | stderr |
 |:--------------------------------|:----------------|-------------:|-------:|-----------------:|-------:|
-| UnixPathAppendBenchmark         | RootPath        | 268.32       | 0.08   | 135.81           | 0.04   |
-| UnixPathAppendBenchmark         | RelativePath    | 301.72       | 0.09   | 136.88           | 0.06   |
-| UnixPathInstantiateBenchmark    | FixedDrive      | 175.50       | 0.03   | 96.25            | 0.04   |
-| UnixPathInstantiateBenchmark    | RelativePath    | 353.35       | 0.07   | 189.25           | 0.08   |
-| UnixPathParentBenchmark         | Parent          | 35.04        | 0.02   | 24.03            | 0.01   |
-| UnixPathParentBenchmark         | ParentRoot      | 14.82        | 0.00   | 8.07             | 0.01   |
-| UnixPathParentBenchmark         | RelativeParent  | 77.97        | 0.04   | 54.60            | 0.05   |
-| UnixPathRelativeBenchmark       | PinnedRelative  | 153.08       | 0.02   | 92.48            | 0.04   |
-| UnixPathTrimBenchmark           | Trimmed         | 100.03       | 0.03   | 74.28            | 0.04   |
-| UnixPathTrimBenchmark           | NoTrim          | 11.78        | 0.01   | 5.19             | 0.00   |
-| WindowsPathAppendBenchmark      | DosDrive        | 303.13       | 0.25   | 148.42           | 0.04   |
-| WindowsPathAppendBenchmark      | DosDriveAbs     | 13.53        | 0.00   | 8.47             | 0.00   |
-| WindowsPathAppendBenchmark      | UncShare        | 285.39       | 0.07   | 143.57           | 0.04   |
-| WindowsPathAppendBenchmark      | RelativePath    | 321.67       | 0.05   | 150.35           | 0.05   |
-| WindowsPathInstantiateBenchmark | DosDrive        | 176.11       | 0.04   | 94.02            | 0.04   |
-| WindowsPathInstantiateBenchmark | UncShare        | 524.28       | 0.08   | 287.56           | 0.07   |
-| WindowsPathInstantiateBenchmark | UncSharePartial | 264.82       | 0.08   | 155.74           | 0.04   |
-| WindowsPathInstantiateBenchmark | RelativePath    | 354.93       | 0.07   | 188.42           | 0.06   |
-| WindowsPathParentBenchmark      | DosParent       | 36.44        | 0.01   | 24.53            | 0.01   |
-| WindowsPathParentBenchmark      | UncParent       | 31.04        | 0.00   | 22.48            | 0.01   |
-| WindowsPathParentBenchmark      | DosParentRoot   | 14.98        | 0.00   | 8.11             | 0.00   |
-| WindowsPathParentBenchmark      | UncParentRoot   | 3.85         | 0.00   | 1.05             | 0.00   |
-| WindowsPathParentBenchmark      | RelativeParent  | 77.89        | 0.02   | 54.99            | 0.10   |
-| WindowsPathRelativeBenchmark    | DosRelative     | 199.23       | 0.04   | 100.47           | 0.07   |
-| WindowsPathTrimBenchmark        | Trimmed         | 102.39       | 0.02   | 72.35            | 0.03   |
-| WindowsPathTrimBenchmark        | NoTrim          | 11.93        | 0.01   | 5.18             | 0.00   |
+| UnixPathAppendBenchmark         | RootPath        | 299.18       | 0.08   | 136.38           | 0.04   |
+| UnixPathAppendBenchmark         | RelativePath    | 307.34       | 0.07   | 137.01           | 0.05   |
+| UnixPathInstantiateBenchmark    | FixedDrive      | 183.92       | 0.57   | 97.37            | 0.04   |
+| UnixPathInstantiateBenchmark    | RelativePath    | 392.16       | 0.10   | 192.57           | 0.08   |
+| UnixPathParentBenchmark         | Parent          | 34.74        | 0.01   | 24.01            | 0.01   |
+| UnixPathParentBenchmark         | ParentRoot      | 15.01        | 0.01   | 8.05             | 0.01   |
+| UnixPathParentBenchmark         | RelativeParent  | 77.56        | 0.01   | 54.42            | 0.01   |
+| UnixPathRelativeBenchmark       | PinnedRelative  | 153.59       | 0.04   | 94.98            | 0.03   |
+| UnixPathTrimBenchmark           | Trimmed         | 100.65       | 0.01   | 72.24            | 0.03   |
+| UnixPathTrimBenchmark           | NoTrim          | 11.74        | 0.01   | 5.18             | 0.00   |
+| WindowsPathAppendBenchmark      | DosDrive        | 338.08       | 0.05   | 145.88           | 0.05   |
+| WindowsPathAppendBenchmark      | DosDriveAbs     | 13.50        | 0.00   | 8.47             | 0.00   |
+| WindowsPathAppendBenchmark      | UncShare        | 313.53       | 0.08   | 145.54           | 0.04   |
+| WindowsPathAppendBenchmark      | RelativePath    | 333.07       | 0.09   | 148.19           | 0.09   |
+| WindowsPathInstantiateBenchmark | DosDrive        | 190.97       | 0.04   | 93.33            | 0.04   |
+| WindowsPathInstantiateBenchmark | UncShare        | 540.09       | 0.10   | 285.36           | 0.03   |
+| WindowsPathInstantiateBenchmark | UncSharePartial | 271.49       | 0.16   | 154.58           | 0.03   |
+| WindowsPathInstantiateBenchmark | RelativePath    | 369.54       | 0.22   | 193.77           | 0.04   |
+| WindowsPathParentBenchmark      | DosParent       | 35.99        | 0.01   | 24.48            | 0.01   |
+| WindowsPathParentBenchmark      | UncParent       | 30.70        | 0.01   | 22.52            | 0.06   |
+| WindowsPathParentBenchmark      | DosParentRoot   | 15.00        | 0.01   | 8.12             | 0.00   |
+| WindowsPathParentBenchmark      | UncParentRoot   | 3.86         | 0.00   | 1.05             | 0.00   |
+| WindowsPathParentBenchmark      | RelativeParent  | 78.76        | 0.02   | 54.18            | 0.02   |
+| WindowsPathRelativeBenchmark    | DosRelative     | 198.31       | 0.03   | 102.34           | 0.04   |
+| WindowsPathTrimBenchmark        | Trimmed         | 100.89       | 0.03   | 74.68            | 0.04   |
+| WindowsPathTrimBenchmark        | NoTrim          | 11.42        | 0.00   | 5.21             | 0.00   |
 
 But they do show that Mono is at a significant disadvantage over .NET Core.

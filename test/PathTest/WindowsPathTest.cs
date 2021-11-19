@@ -94,6 +94,9 @@
         [TestCase(@"ü:\")]
         [TestCase(@"€:\")]
         [TestCase(@"\\server\\share")]
+        [TestCase(@"C:\foo\D:")]
+        [TestCase(@"C::")]
+        [TestCase(@"\\server\share\c:\root\dir")]
         public void InvalidPath(string path)
         {
             Assert.That(() => {

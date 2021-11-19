@@ -119,6 +119,8 @@
                 if (IsDirSepChar(c)) {
                     if (i > ps) stack.Add(trimmedPath.Substring(ps, i - ps));
                     ps = i + 1;
+                } else if (c == ':') {
+                    throw new ArgumentException("Invalid path", nameof(path));
                 }
             }
             if (ps < trimmedPath.Length) {
