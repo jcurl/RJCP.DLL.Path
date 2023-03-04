@@ -2,6 +2,7 @@ namespace RJCP.IO
 {
     using System;
     using Internal;
+    using RJCP.Core.Environment;
 
     /// <summary>
     /// A representation of a file system path that is operating system agnostic.
@@ -39,7 +40,7 @@ namespace RJCP.IO
         /// </remarks>
         public static Path ToPath(string path)
         {
-            if (OSInfo.IsWinNT()) return new WindowsPath(path);
+            if (Platform.IsWinNT()) return new WindowsPath(path);
             return new UnixPath(path);
         }
 
