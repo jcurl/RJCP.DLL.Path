@@ -11,7 +11,7 @@
     /// This class is intended to only be used for classes deriving from <see cref="Path"/>, as it has almost no checks
     /// on the input to make it as fast as possible.
     /// </remarks>
-    public class PathStack
+    internal sealed class PathStack
     {
         private IList<string> m_PathStack;
 

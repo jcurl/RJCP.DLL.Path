@@ -119,6 +119,6 @@ namespace RJCP.IO
         /// Gets the path stack.
         /// </summary>
         /// <value>The path stack representing each folder and leaf node in the path.</value>
-        protected PathStack PathStack { get; } = new PathStack();
+        internal PathStack PathStack { get; } = new PathStack();
     }
 }
