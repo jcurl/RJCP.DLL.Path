@@ -19,9 +19,10 @@
     <PackageId>RJCP.IO.Path</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/jcurl/RJCP.DLL.Path.git</PackageProjectUrl>
     <Description>Functions to work with and manipulate paths for Unix and Windows.</Description>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
 
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 
