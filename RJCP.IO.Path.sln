@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RJCP.IO.Path", "code\RJCP.IO.Path.csproj", "{B0F19903-302C-495C-9060-1B0E62C542FF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{02B1B6C7-A205-4CEE-9D83-79E2BDE0EE1A}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RJCP.IO.PathTest", "test\PathTest\RJCP.IO.PathTest.csproj", "{F5713213-D2C2-4EB9-944F-FC8244D4A557}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RJCP.IO.PathTest.Legacy", "test\PathTest\RJCP.IO.PathTest.Legacy.csproj", "{3DE71CF9-7004-4025-B23D-57D67819EC10}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RJCP.IO.PathBenchmark", "test\PathBenchmark\RJCP.IO.PathBenchmark.csproj", "{968065ED-7282-4202-91D3-898B0EC9F9BF}"
 EndProject
@@ -55,9 +59,26 @@ Global
 		{968065ED-7282-4202-91D3-898B0EC9F9BF}.Release|x64.Build.0 = Release|Any CPU
 		{968065ED-7282-4202-91D3-898B0EC9F9BF}.Release|x86.ActiveCfg = Release|Any CPU
 		{968065ED-7282-4202-91D3-898B0EC9F9BF}.Release|x86.Build.0 = Release|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Debug|x64.Build.0 = Debug|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Debug|x86.Build.0 = Debug|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Release|x64.ActiveCfg = Release|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Release|x64.Build.0 = Release|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Release|x86.ActiveCfg = Release|Any CPU
+		{3DE71CF9-7004-4025-B23D-57D67819EC10}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F5713213-D2C2-4EB9-944F-FC8244D4A557} = {02B1B6C7-A205-4CEE-9D83-79E2BDE0EE1A}
+		{968065ED-7282-4202-91D3-898B0EC9F9BF} = {02B1B6C7-A205-4CEE-9D83-79E2BDE0EE1A}
+		{3DE71CF9-7004-4025-B23D-57D67819EC10} = {02B1B6C7-A205-4CEE-9D83-79E2BDE0EE1A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0087D3BB-BF8B-4F73-A93F-0F283B74A6CC}
