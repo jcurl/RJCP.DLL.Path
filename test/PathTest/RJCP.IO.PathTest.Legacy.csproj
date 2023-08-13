@@ -59,9 +59,12 @@
     <ProjectReference Include="..\..\code\RJCP.IO.Path.csproj">
       <SetTargetFramework>TargetFramework=net40</SetTargetFramework>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\nunitextensions\CodeQuality\RJCP.CodeQuality.csproj" />
+    <ProjectReference Include="..\..\..\environment\Environment\RJCP.Environment.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="FileSystemNodeInfoTest.cs" />
     <Compile Include="UnixPathTest.cs" />
     <Compile Include="WindowsPathTest.cs" />
   </ItemGroup>

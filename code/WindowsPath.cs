@@ -623,15 +623,19 @@
             // cached behaviour while parsing this object.
             if (m_Path != null) return m_Path;
 #endif
-
-            StringBuilder path = new StringBuilder();
-            path.Append(RootVolume);
-            if (PathStack.Count > 0) {
+            if (PathStack.Count == 0) {
+                m_Path = RootVolume;
+            } else {
+                StringBuilder path = new StringBuilder();
+                path.Append(RootVolume);
                 if (IsPinned) path.Append('\\');
+#if NETSTANDARD
+                path.AppendJoin('\\', PathStack.Stack);
+#else
                 path.Append(string.Join(@"\", PathStack.Stack));
+#endif
+                m_Path = path.ToString();
             }
-
-            m_Path = path.ToString();
             return m_Path;
         }
     }
