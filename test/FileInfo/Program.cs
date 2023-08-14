@@ -21,11 +21,6 @@ namespace RJCP.FileInfo
                 return 1;
             }
 
-            bool resolveLinks = args.Length != 1;
-            if (resolveLinks) {
-                Console.WriteLine("Automatically resolving target links if possible");
-            }
-
             FileSystemNodeInfo first = null;
             bool identical = true;
             foreach (string arg in args) {
@@ -35,6 +30,9 @@ namespace RJCP.FileInfo
                     info = new FileSystemNodeInfo(path, false);
                 } catch (System.IO.FileNotFoundException ex) {
                     Console.WriteLine($"Couldn't find file: {path} ({ex.Message})");
+                    return 1;
+                } catch (System.IO.DirectoryNotFoundException ex) {
+                    Console.WriteLine($"Couldn't find directory: {path} ({ex.Message})");
                     return 1;
                 }
 
@@ -58,24 +56,29 @@ namespace RJCP.FileInfo
                     break;
                 }
 
-                FileSystemNodeInfo resolved;
+                FileSystemNodeInfo resolved = null;
                 try {
                     resolved = new FileSystemNodeInfo(path, true);
                 } catch (System.IO.FileNotFoundException ex) {
+                    identical = false;
                     Console.WriteLine($"Couldn't resolve file: {path} ({ex.Message})");
-                    return 1;
+                } catch (System.IO.DirectoryNotFoundException ex) {
+                    identical = false;
+                    Console.WriteLine($"Couldn't resolve dir: {path} ({ex.Message})");
                 }
 
-                if (first == null) {
-                    first = resolved;
-                } else {
-                    if (first != resolved) identical = false;
+                if (resolved != null) {
+                    if (first == null) {
+                        first = resolved;
+                    } else {
+                        if (first != resolved) identical = false;
+                    }
                 }
+                Console.WriteLine("");
             }
 
             if (args.Length > 1) {
                 if (identical) {
-                    Console.WriteLine("");
                     Console.WriteLine("Paths are identical");
                     return 0;
                 }

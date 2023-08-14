@@ -73,6 +73,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Internal\PathStack.cs" />
     <Compile Include="Native\Unix\GLibc6.cs" />
+    <Compile Include="Native\Unix\SafeMallocHandle.cs" />
     <Compile Include="Native\Win32\Kernel32+ACCESS_MASK.cs" />
     <Compile Include="Native\Win32\Kernel32+BY_HANDLE_FILE_INFORMATION.cs" />
     <Compile Include="Native\Win32\Kernel32+CreateFileFlags.cs" />

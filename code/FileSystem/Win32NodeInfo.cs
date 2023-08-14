@@ -29,17 +29,18 @@
                     if ((fileInfoByHandle.FileAttributes & Kernel32.FileAttributeFlags.FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
                         LinkTarget = GetLinkTarget(path);
                         if (resolveLinks) {
-                            // Get the resolved path
                             file.Close();
                             file = GetFileHandle(path, true);
                             result = Kernel32.GetFileInformationByHandle(file, out fileInfoByHandle);
                             if (!result) {
+                                // TODO: We may want to raise an exception here.
                                 Type = NodeInfoType.None;
                                 return;
                             }
                         }
                     }
                 } else {
+                    // TODO: We may want to raise an exception here.
                     Type = NodeInfoType.None;
                     return;
                 }

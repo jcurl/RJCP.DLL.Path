@@ -1,10 +1,10 @@
 ﻿namespace RJCP.IO.FileSystem
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Runtime.InteropServices;
     using Mono.Unix;
+    using Native.Unix;
 
     /// <summary>
     /// Get file information for Windows Operating Systems.
@@ -19,34 +19,22 @@
 
         public MonoUnixNodeInfo(string path, bool resolveLinks)
         {
-            // Used to check for cyclic dependencies (a link depends on a link, depends on a link, ...)
-            HashSet<string> resolved = new HashSet<string> {
-                path
-            };
-
             UnixFileSystemInfo info;
-            bool resolving = resolveLinks;
-            string cPath = path;
-            int redirects = 40;
-            do {
-                info = UnixFileSystemInfo.GetFileSystemEntry(cPath);
-                if (!info.Exists)
-                    throw new FileNotFoundException($"File {path} can't be resolved");
+            info = UnixFileSystemInfo.GetFileSystemEntry(path);
+            if (info == null || !info.Exists)
+                throw new FileNotFoundException($"File {path} not found", path);
 
-                if (info.IsSymbolicLink) {
-                    cPath = GetLinkTarget(cPath);
-                    LinkTarget = cPath;
-                    if (resolving) {
-                        if (resolved.Contains(cPath))
-                            throw new FileNotFoundException($"File cyclic dependency at {cPath}");
-                        resolved.Add(cPath);
-                        redirects--;
-                        // If we ever get to too many redirects, we present the user with the last entry. Note, this
-                        // makes it very hard to detect large cyclic graphs.
-                        if (redirects == 0) resolving = false;
-                    }
+            if (info.IsSymbolicLink) {
+                LinkTarget = GetLinkTarget(path);
+                if (resolveLinks) {
+                    if (LinkTarget == null)
+                        throw new FileNotFoundException($"Link {path} can't be resolved", path);
+
+                    info = UnixFileSystemInfo.GetFileSystemEntry(LinkTarget);
+                    if (info == null || !info.Exists || !TargetCanBeResolved(LinkTarget))
+                        throw new FileNotFoundException($"Resolved File {LinkTarget} not found", LinkTarget);
                 }
-            } while (resolving && info.IsSymbolicLink);
+            }
 
             Device = info.Device;
             DeviceType = info.DeviceType;
@@ -54,31 +42,58 @@
 
             if (DeviceType != 0) {
                 // We don't care what the device/inode is for a device type file, because it doesn't matter where it is,
-                // it's still the same device.
-                m_HashCode = unchecked((int)DeviceType);
+                // it's still the same device. We set the upper bit if it's a device, else we clear it, to avoid a
+                // common conditions.
+                m_HashCode = unchecked((int)DeviceType | (int)0x80000000);
             } else {
                 m_HashCode = unchecked(
-                    ((int)Device << 16) ^
-                    (int)Inode
+                    (((int)Device << 16) ^
+                    (int)Inode) & 0x7FFFFFFF
                 );
             }
         }
 
         private static string GetLinkTarget(string path)
         {
+            using (GLibc6.SafeMallocHandle buffer = GLibc6.realpath(path, IntPtr.Zero)) {
+                if (!buffer.IsInvalid)
+                    return Marshal.PtrToStringAnsi(buffer.DangerousGetHandle());
+            }
+
+            // Getting the resolved link failed, so we open the symbolic link itself.
+            return GetLinkTargetDirect(path);
+        }
+
+        private static string GetLinkTargetDirect(string path)
+        {
+            string link;
             unsafe {
                 byte* buffer = stackalloc byte[32768];
-                int len = Native.Unix.GLibc6.readlink(path, buffer, 32768);
+                int len = GLibc6.readlink(path, buffer, 32768);
                 if (len <= 0 || len >= 32768)
-                    return string.Empty;
-                return Marshal.PtrToStringAnsi((IntPtr)buffer, len);
+                    return null;
+
+                link = Marshal.PtrToStringAnsi((IntPtr)buffer, len);
+            }
+
+            IO.Path fullLink = IO.Path.ToPath(link);
+            if (fullLink.IsPinned) return link;
+
+            IO.Path fullPath = IO.Path.ToPath(path);
+            if (!fullPath.IsPinned)
+                fullPath = IO.Path.ToPath(Environment.CurrentDirectory).Append(fullPath);
+            fullPath = fullPath.GetParent().Append(fullLink);
+            return fullPath.ToString();
+        }
+
+        private static bool TargetCanBeResolved(string path)
+        {
+            using (GLibc6.SafeMallocHandle buffer = GLibc6.realpath(path, IntPtr.Zero)) {
+                return !buffer.IsInvalid;
             }
         }
 
-        public override NodeInfoType Type
-        {
-            get { return NodeInfoType.MonoUnix; }
-        }
+        public override NodeInfoType Type { get { return NodeInfoType.MonoUnix; } }
 
         public override string LinkTarget { get; }
 

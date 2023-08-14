@@ -92,18 +92,14 @@
 
             if (Platform.IsWinNT()) {
                 m_NodeInfo = new Win32NodeInfo(Path, resolveLink);
-                if (m_NodeInfo.Type != NodeInfoType.None) {
-                    LinkTarget = m_NodeInfo.LinkTarget;
-                    return;
-                }
-
-                m_NodeInfo = new GenericNodeInfo(Path, false);
-                return;
+            } else {
+                m_NodeInfo = new MonoUnixNodeInfo(Path, resolveLink);
             }
 
-            m_NodeInfo = new MonoUnixNodeInfo(Path, resolveLink);
             if (m_NodeInfo.Type != NodeInfoType.None) {
                 LinkTarget = m_NodeInfo.LinkTarget;
+            } else {
+                m_NodeInfo = new GenericNodeInfo(Path, false);
             }
         }
 
@@ -119,6 +115,9 @@
         /// <value>The link target path.</value>
         /// <remarks>
         /// If this value is <see langword="null"/> or empty, then this is not a reparse point, or it is not known.
+        /// Otherwise, this is the full path to the file (it may not be the canonical path, but is the one resolved
+        /// through parsing links). On Linux, if a part of the path is a symbolic link, then this is not resolved,
+        /// only the final path.
         /// </remarks>
         public string LinkTarget { get; }
 
