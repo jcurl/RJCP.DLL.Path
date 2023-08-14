@@ -88,7 +88,7 @@
             }
 
             if (!File.Exists(Path) && !Directory.Exists(Path))
-                throw new FileNotFoundException(string.Format("Path '{0}' not found", Path));
+                throw new FileNotFoundException($"Path '{Path}' not found");
 
             if (Platform.IsWinNT()) {
                 m_NodeInfo = new Win32NodeInfo(Path, resolveLink);

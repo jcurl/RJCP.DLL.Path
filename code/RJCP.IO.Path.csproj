@@ -83,6 +83,8 @@
     <Compile Include="Native\Win32\Kernel32+FILETIME.cs" />
     <Compile Include="Native\Win32\Kernel32+FILE_ID_INFO.cs" />
     <Compile Include="Native\Win32\Kernel32+FILE_INFO_BY_HANDLE_CLASS.cs" />
+    <Compile Include="Native\Win32\Kernel32+FSCTL.cs" />
+    <Compile Include="Native\Win32\Kernel32+REPARSE_DATA_BUFFER.cs" />
     <Compile Include="Native\Win32\Kernel32+SECURITY_IMPERSONATION_LEVEL.cs" />
     <Compile Include="Native\Win32\Kernel32.cs" />
     <Compile Include="NodeInfoType.cs" />
