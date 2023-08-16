@@ -1,6 +1,7 @@
 ﻿namespace RJCP.IO.FileSystem
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Runtime.InteropServices;
@@ -14,6 +15,27 @@
     internal sealed class Win32NodeInfo : NodeInfo<Win32NodeInfo>
     {
         private readonly int m_HashCode;
+
+        // Don't use the extended API (e.g. on Windows XP) because it is not defined.
+        private static class Api
+        {
+            private static bool s_GetFileInformationByHandleEx = true;
+            private static bool s_GetFinalPathNameByHandle = true;
+
+            public static bool GetFileInformationByHandleEx { get { return s_GetFileInformationByHandleEx; } }
+
+            public static bool GetFinalPathNameByHandle { get { return s_GetFinalPathNameByHandle; } }
+
+            public static void DisableGetFinalPathNameByHandle()
+            {
+                s_GetFinalPathNameByHandle = false;
+            }
+
+            public static void DisableGetFileInformationByHandleEx()
+            {
+                s_GetFileInformationByHandleEx = false;
+            }
+        }
 
         public Win32NodeInfo(string path, bool resolveLinks)
         {
@@ -29,7 +51,7 @@
                 bool result = Kernel32.GetFileInformationByHandle(file, out Kernel32.BY_HANDLE_FILE_INFORMATION fileInfoByHandle);
                 if (result) {
                     if ((fileInfoByHandle.FileAttributes & Kernel32.FileAttributeFlags.FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
-                        LinkTarget = GetLinkTarget(path);
+                        LinkTarget = GetLinkTarget(path, file);
                         if (resolveLinks) {
                             if (LinkTarget == null)
                                 throw new FileNotFoundException($"Link {path} can't be resolved", path);
@@ -45,7 +67,7 @@
                     throw new FileNotFoundException($"File {path} not found", path);
                 }
 
-                if (m_Win32ExtendedApi) {
+                if (Api.GetFileInformationByHandleEx) {
                     try {
                         bool resultEx = Kernel32.GetFileInformationByHandleEx(file, Kernel32.FILE_INFO_BY_HANDLE_CLASS.FileIdInfo,
                             out Kernel32.FILE_ID_INFO fileInfoEx, idInfoSize);
@@ -62,7 +84,7 @@
                             return;
                         }
                     } catch (EntryPointNotFoundException) {
-                        ExtendedApiNotAvailable();
+                        Api.DisableGetFileInformationByHandleEx();
                     }
                 }
 
@@ -80,9 +102,11 @@
             }
         }
 
+        private static readonly SafeFileHandle InvalidFile = new SafeFileHandle(IntPtr.Zero, false);
+
         private static SafeFileHandle GetFileHandle(string path, bool resolveLinks, bool throwOnError)
         {
-            SafeFileHandle file = null;
+            SafeFileHandle file;
             if (File.Exists(path)) {
                 Kernel32.CreateFileFlags createFlags = resolveLinks ?
                     Kernel32.CreateFileFlags.FILE_ATTRIBUTE_NORMAL :
@@ -91,7 +115,7 @@
                 file = Kernel32.CreateFile(path, 0,
                     Kernel32.FileShare.FILE_SHARE_READ | Kernel32.FileShare.FILE_SHARE_WRITE | Kernel32.FileShare.FILE_SHARE_DELETE,
                     IntPtr.Zero, Kernel32.CreationDisposition.OPEN_EXISTING, createFlags, IntPtr.Zero);
-            } else {
+            } else if (Directory.Exists(path)) {
                 // See https://learn.microsoft.com/en-us/windows/win32/fileio/obtaining-a-handle-to-a-directory
 
                 Kernel32.CreateFileFlags createFlags = resolveLinks ?
@@ -101,27 +125,67 @@
                 file = Kernel32.CreateFile(path, 0,
                     Kernel32.FileShare.FILE_SHARE_READ | Kernel32.FileShare.FILE_SHARE_WRITE,
                     IntPtr.Zero, Kernel32.CreationDisposition.OPEN_EXISTING, createFlags, IntPtr.Zero);
+            } else {
+                if (throwOnError)
+                    throw new FileNotFoundException($"Link {path} not found", path);
+                return InvalidFile;
             }
 
             if (file.IsInvalid) {
                 if (throwOnError) {
                     Exception ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    throw new FileNotFoundException($"Link {path} can't be resolved", path, ex);
+                    throw new FileNotFoundException($"Link {path} not found", path, ex);
                 }
             }
             return file;
         }
 
+        /// <summary>
+        /// Gets the link to the target.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <returns>The string with the link to the target.</returns>
+        /// <exception cref="FileNotFoundException">Link <paramref name="path"/> can't be resolved</exception>
+        /// <remarks>
+        /// It opens the file so that the end target is resolved, and gets the name of the file. This function assumes
+        /// that <paramref name="path"/> is already determined to be a reparse point.
+        /// </remarks>
         private static string GetLinkTarget(string path)
+        {
+            return GetLinkTarget(path, InvalidFile);
+        }
+
+        /// <summary>
+        /// Gets the link to the target.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <param name="unresolvedLink">
+        /// The already opened handle to the reparse point, so it doesn't need to be opened twice.
+        /// </param>
+        /// <returns>The string with the link to the target.</returns>
+        /// <exception cref="FileNotFoundException">Link <paramref name="path"/> can't be resolved</exception>
+        /// <remarks>
+        /// It opens the file so that the end target is resolved, and gets the name of the file. This function assumes
+        /// that <paramref name="path"/> is already determined to be a reparse point. If opening the path fails, the
+        /// <paramref name="unresolvedLink"/> is then used to get the reparse point information which contains the link.
+        /// Therefore, it is important that the <paramref name="unresolvedLink"/> was already opened with
+        /// <see cref="GetFileHandle(string, bool, bool)"/> without resolving links.
+        /// </remarks>
+        private static string GetLinkTarget(string path, SafeFileHandle unresolvedLink)
         {
             SafeFileHandle file = GetFileHandle(path, true, false);
             if (file.IsInvalid) {
                 // Getting the resolved link failed, so we open the symbolic link itself. If there is a problem, an
                 // exception is raised. So we know the file handle is valid.
-                return GetLinkTargetDirect(path);
+                if (unresolvedLink.IsInvalid) {
+                    return GetLinkTargetResolve(path, false);
+                } else {
+                    return GetLinkTargetResolve(path, unresolvedLink, false);
+                }
             }
 
-            try {
+            // Note, this is always called at least once, even on Windows XP, until we determine the API doesn't exist.
+            if (Api.GetFinalPathNameByHandle) {
                 // See https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
                 //
                 // When using VOLUME_NAME_DOS, the string that is returned by this function uses the "\\?\" syntax. For
@@ -133,31 +197,134 @@
                 // determine the drive letter for the volume device path, use the QueryDosDevice function on every drive
                 // letter until a matching device name is found.
 
-                unsafe {
-                    char* buffer = stackalloc char[32768];
+                try {
+                    unsafe {
+                        char* buffer = stackalloc char[32768];
 
-                    // Windows Vista and later. On Windows XP, we don't support symlinks (fsutil doesn't, and most utils
-                    // don't properly support them either).
-                    int len = Kernel32.GetFinalPathNameByHandle(file, buffer, 32768, 0);
-                    if (len < 0) {
-                        Exception ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
-                        throw new FileNotFoundException($"Link {path} can't be resolved", path, ex);
-                    } else if (len > 32768) {
-                        return null;
+                        // Windows Vista and later. On Windows XP, we don't support symlinks (fsutil doesn't, and most utils
+                        // don't properly support them either).
+                        int len = Kernel32.GetFinalPathNameByHandle(file, buffer, 32768, 0);
+                        if (len < 0) {
+                            Exception ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+                            throw new FileNotFoundException($"Link {path} can't be resolved", path, ex);
+                        } else if (len > 32768) {
+                            throw new FileNotFoundException($"Link {path} can't be resolved", path);
+                        }
+
+                        string target = new string(buffer, 0, len);
+                        if (target.StartsWith(@"\\?\"))
+#if NETSTANDARD
+                            return target[4..];
+#else
+                            return target.Substring(4);
+#endif
+                        return target;
+                    }
+                } catch (EntryPointNotFoundException) {
+                    Api.DisableGetFinalPathNameByHandle();
+                } finally {
+                    file.Close();
+                }
+            }
+
+            // On Windows XP we should resolve the paths manually. Normally, we won't get recursion here (even if we do
+            // handle it) because `file` would be invalid (the OS couldn't resolve). So no recursion would be raised by
+            // this method, but instead by `GetFileHandle`.
+            if (unresolvedLink.IsInvalid) {
+                return GetLinkTargetResolve(path, true);
+            } else {
+                return GetLinkTargetResolve(path, unresolvedLink, true);
+            }
+        }
+
+        /// <summary>
+        /// Gets the reparse link information with recursion.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <param name="throwOnRecursion">If recursion should result in an exception.</param>
+        /// <returns>The last link the reparse point redirects to.</returns>
+        /// <exception cref="FileNotFoundException">
+        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
+        /// </exception>
+        /// <remarks>
+        /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
+        /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// </remarks>
+        private static string GetLinkTargetResolve(string path, bool throwOnRecursion)
+        {
+            using (SafeFileHandle file = GetFileHandle(path, false, true)) {
+                return GetLinkTargetResolve(path, file, throwOnRecursion);
+            }
+        }
+
+        /// <summary>
+        /// Gets the reparse link information with recursion.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <param name="file">
+        /// The already opened handle to the reparse point from <paramref name="path"/>, so it doesn't need to be opened
+        /// twice.
+        /// </param>
+        /// <param name="throwOnRecursion">If recursion should result in an exception.</param>
+        /// <returns>The last link the reparse point redirects to.</returns>
+        /// <exception cref="ArgumentException">The parameter <paramref name="file"/> is not valid.</exception>
+        /// <exception cref="FileNotFoundException">
+        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
+        /// </exception>
+        /// <remarks>
+        /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
+        /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// </remarks>
+        private static string GetLinkTargetResolve(string path, SafeFileHandle file, bool throwOnRecursion)
+        {
+            if (file.IsInvalid)
+                throw new ArgumentException("Invalid file handle");
+
+            List<Kernel32.BY_HANDLE_FILE_INFORMATION> recursion = new List<Kernel32.BY_HANDLE_FILE_INFORMATION>();
+            bool result = Kernel32.GetFileInformationByHandle(file, out Kernel32.BY_HANDLE_FILE_INFORMATION fileInfoByHandle);
+            if (!result)
+                throw new FileNotFoundException($"File {path} not found", path);
+            recursion.Add(fileInfoByHandle);
+
+            string prevTarget = path;
+            string target = GetLinkTargetDirect(prevTarget, file);
+            if (target == null) return prevTarget;
+
+            string unresolvedLink = target;
+            do {
+                SafeFileHandle next = GetFileHandle(target, false, false);
+                if (next.IsInvalid) return target;
+                try {
+                    result = Kernel32.GetFileInformationByHandle(next, out fileInfoByHandle);
+                    if (result) {
+                        // Check to see we have no recursion
+                        foreach (Kernel32.BY_HANDLE_FILE_INFORMATION info in recursion) {
+                            if (info.FileIndexLow == fileInfoByHandle.FileIndexLow &&
+                                info.FileIndexHigh == fileInfoByHandle.FileIndexHigh &&
+                                info.VolumeSerialNumber == fileInfoByHandle.VolumeSerialNumber) {
+                                // We have recursion.
+                                if (throwOnRecursion)
+                                    throw new FileNotFoundException($"Link {path} can't be resolved from recursion", target);
+                                return unresolvedLink;
+                            }
+                        }
+                        if ((fileInfoByHandle.FileAttributes & Kernel32.FileAttributeFlags.FILE_ATTRIBUTE_REPARSE_POINT) == 0) {
+                            return target;
+                        }
+                        recursion.Add(fileInfoByHandle);
+                    } else {
+                        return prevTarget;
                     }
 
-                    string target = new string(buffer, 0, len);
-                    if (target.StartsWith(@"\\?\"))
-#if NETSTANDARD
-                        return target[4..];
-#else
-                        return target.Substring(4);
-#endif
-                    return target;
+                    prevTarget = target;
+                    target = GetLinkTargetDirect(prevTarget, next);
+                    if (target == null) {
+                        return prevTarget;
+                    }
+                } finally {
+                    next.Close();
                 }
-            } finally {
-                file.Close();
-            }
+            } while (true);
         }
 
         /// <summary>
@@ -179,10 +346,53 @@
             if (s1 < s3) throw new InvalidOperationException("Internal Error");
         }
 
+        /// <summary>
+        /// Gets the reparse link information without recursion.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <returns>
+        /// The link the reparse point redirects to. If the result is <see langword="null"/>, then the reparse tag is
+        /// unknown.
+        /// </returns>
+        /// <exception cref="FileNotFoundException">
+        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
+        /// </exception>
+        /// <remarks>
+        /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
+        /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// </remarks>
         private static string GetLinkTargetDirect(string path)
         {
+            using (SafeFileHandle file = GetFileHandle(path, false, true)) {
+                return GetLinkTargetDirect(path, file);
+            }
+        }
+
+        /// <summary>
+        /// Gets the reparse link information without recursion.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <param name="file">
+        /// The already opened handle to the reparse point from <paramref name="path"/>, so it doesn't need to be opened
+        /// twice.
+        /// </param>
+        /// <returns>
+        /// The link the reparse point redirects to. If the result is <see langword="null"/>, then the reparse tag is
+        /// unknown.
+        /// </returns>
+        /// <exception cref="ArgumentException">The parameter <paramref name="file"/> is not valid.</exception>
+        /// <exception cref="FileNotFoundException">
+        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
+        /// </exception>
+        /// <remarks>
+        /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
+        /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// </remarks>
+        private static string GetLinkTargetDirect(string path, SafeFileHandle file)
+        {
+            if (file.IsInvalid)
+                throw new ArgumentException("Invalid file handle");
             CheckReparseStructs();
-            SafeFileHandle file = GetFileHandle(path, false, true);
 
             // For more information, see also:
             // - https://social.msdn.microsoft.com/Forums/en-US/aaa2d1b8-b302-4939-861e-5b011b8b8a50/how-to-get-the-target-of-a-symbolic-link?forum=vcgeneral
@@ -218,30 +428,44 @@
                         return fullPath.ToString();
                     }
 
-                    return Encoding.Unicode.GetString(symReparseDataBuffer.PathBuffer,
-                        symReparseDataBuffer.PrintNameOffset, symReparseDataBuffer.PrintNameLength);
+                    if (symReparseDataBuffer.PrintNameLength != 0) {
+                        return Encoding.Unicode.GetString(symReparseDataBuffer.PathBuffer,
+                            symReparseDataBuffer.PrintNameOffset, symReparseDataBuffer.PrintNameLength);
+                    }
+                    string symTarget = Encoding.Unicode.GetString(symReparseDataBuffer.PathBuffer,
+                        symReparseDataBuffer.SubstituteNameOffset, symReparseDataBuffer.SubstituteNameLength);
+                    if (symTarget.StartsWith(@"\??\"))
+#if NETSTANDARD
+                        return symTarget[4..];
+#else
+                        return symTarget.Substring(4);
+#endif
+                    return symTarget;
                 case Kernel32.IO_REPARSE_TAG_MOUNT_POINT:
                     Kernel32.REPARSE_DATA_BUFFER_Junction junReparseDataBuffer =
                         (Kernel32.REPARSE_DATA_BUFFER_Junction)Marshal.PtrToStructure(outBuffer, typeof(Kernel32.REPARSE_DATA_BUFFER_Junction));
 
-                    return Encoding.Unicode.GetString(junReparseDataBuffer.PathBuffer,
-                        junReparseDataBuffer.PrintNameOffset, junReparseDataBuffer.PrintNameLength);
+                    // On Windows XP, the PrintNameLength is zero.
+                    if (junReparseDataBuffer.PrintNameLength != 0) {
+                        return Encoding.Unicode.GetString(junReparseDataBuffer.PathBuffer,
+                            junReparseDataBuffer.PrintNameOffset, junReparseDataBuffer.PrintNameLength);
+                    }
+                    string junTarget = Encoding.Unicode.GetString(junReparseDataBuffer.PathBuffer,
+                        junReparseDataBuffer.SubstituteNameOffset, junReparseDataBuffer.SubstituteNameLength);
+                    if (junTarget.StartsWith(@"\??\"))
+#if NETSTANDARD
+                        return junTarget[4..];
+#else
+                        return junTarget.Substring(4);
+#endif
+                    return junTarget;
                 default:
                     return null;
                 }
             } finally {
                 if (!outBuffer.Equals(IntPtr.Zero))
                     Marshal.FreeHGlobal(outBuffer);
-                file.Close();
             }
-        }
-
-        private static bool m_Win32ExtendedApi = true;
-
-        private static void ExtendedApiNotAvailable()
-        {
-            // Don't use the extended API (e.g. on Windows XP) because it is not defined.
-            m_Win32ExtendedApi = false;
         }
 
         public override NodeInfoType Type { get; }
