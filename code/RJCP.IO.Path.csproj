@@ -64,6 +64,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="BinaryReaderExtensions.cs" />
+    <Compile Include="Files\Exe\FileExecutable.cs" />
+    <Compile Include="Files\Exe\FileMachineType.cs" />
+    <Compile Include="Files\Exe\FileTargetOs.cs" />
+    <Compile Include="Files\Exe\UnixElfExecutable.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader.cs" />
+    <Compile Include="Files\Exe\WindowsSubsystem.cs" />
+    <None Include="Files\Exe\Win32\PEHeader+IMAGE_DATA_DIRECTORY.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_DLLCHARACTERISTICS.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_DOS_HEADER.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_FILE_MachineType.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_FILE_Characteristics.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_FILE_HEADER.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_OPTIONAL_HEADER32.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_OPTIONAL_HEADER64.cs" />
+    <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_SUBSYSTEM.cs" />
+    <Compile Include="Files\Exe\WindowsExecutable.cs" />
     <Compile Include="FileSystemNodeInfo.cs" />
     <Compile Include="FileSystem\GenericNodeInfo.cs" />
     <Compile Include="FileSystem\INodeInfo.cs" />

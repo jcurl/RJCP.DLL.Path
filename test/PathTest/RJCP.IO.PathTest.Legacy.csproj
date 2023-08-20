@@ -65,8 +65,122 @@
 
   <ItemGroup>
     <Compile Include="FileSystemNodeInfoTest.cs" />
+    <Compile Include="Files\Exe\FileExecutableTest.cs" />
+    <Compile Include="Files\Exe\WindowsExecutableTest.cs" />
     <Compile Include="UnixPathTest.cs" />
     <Compile Include="WindowsPathTest.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestResources\WinBinary\dos_header.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\dos_incomplete.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_a014c_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_a0184_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_a01c4_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_a0200_dll32.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_a0200_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_a0200_exe32.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_a8664_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_aaa64_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a014c_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a014c_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="testresources\winbinary\README.md" />
+    <None Include="TestResources\WinBinary\win32cui_a0184_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a0184_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a01c4_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a01c4_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a0200_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a0200_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a0200_exe32.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a8664_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_a8664_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32cui_aaa64_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32gui_aaa64_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32nat_a014c_sys.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32nat_a0184_sys.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32nat_a01c4_sys.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32nat_a0200_sys.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32nat_a0200_sys32.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32nat_a8664_sys.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32nat_aaa64_sys.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32pos_a014c_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win32pos_a014c_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win95cui_a014c_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win95gui_a014c_dll.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win95gui_a014c_exe.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestResources\WinBinary\win95vxd.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <!-- Implicit top import required explicitly to change build output path -->

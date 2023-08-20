@@ -3,6 +3,7 @@ namespace RJCP.FileInfo
     using System;
     using FileSystem;
     using RJCP.IO;
+    using RJCP.IO.Files.Exe;
 
     /// <summary>
     /// File Info Program
@@ -72,6 +73,25 @@ namespace RJCP.FileInfo
                         first = resolved;
                     } else {
                         if (first != resolved) identical = false;
+                    }
+                }
+
+                // Check the file contents:
+                FileExecutable fileExecutable = FileExecutable.GetFile(arg);
+                if (fileExecutable != null) {
+                    Console.WriteLine($" Executable Machine Type: {fileExecutable.MachineType}");
+                    Console.WriteLine($" Executable Target OS:    {fileExecutable.TargetOs}");
+                    Console.WriteLine($" Executable Architecture: {fileExecutable.ArchitectureSize}");
+                    Console.WriteLine($" Executable Is EXE:       {fileExecutable.IsExe}");
+                    Console.WriteLine($" Executable Is DLL:       {fileExecutable.IsDll}");
+                    Console.WriteLine($" Executable Is LE:        {fileExecutable.IsLittleEndian}");
+
+                    if (fileExecutable is WindowsExecutable winExe) {
+                        Console.WriteLine($" Executable Subsystem:    {winExe.Subsystem}");
+                        Console.WriteLine($" Executable Word Size:    {winExe.WordSize}");
+                        Console.WriteLine($" Executable OS Version:   {winExe.OSVersion}");
+                        Console.WriteLine($" Executable Image Vers:   {winExe.ImageVersion}");
+                        Console.WriteLine($" Executable SubSys Vers:  {winExe.SubsystemVersion}");
                     }
                 }
                 Console.WriteLine("");
