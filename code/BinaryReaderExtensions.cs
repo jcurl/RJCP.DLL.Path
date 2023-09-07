@@ -57,7 +57,7 @@
             try {
                 return reader.ReadInt16();
             } finally {
-                reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                reader.BaseStream.Position = pos;
             }
         }
 
@@ -67,7 +67,7 @@
             try {
                 return reader.ReadUInt16();
             } finally {
-                reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                reader.BaseStream.Position = pos;
             }
         }
 
@@ -77,7 +77,7 @@
             try {
                 return reader.ReadInt32();
             } finally {
-                reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                reader.BaseStream.Position = pos;
             }
         }
 
@@ -87,7 +87,7 @@
             try {
                 return reader.ReadUInt32();
             } finally {
-                reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                reader.BaseStream.Position = pos;
             }
         }
 
@@ -97,7 +97,7 @@
             try {
                 return reader.ReadInt64();
             } finally {
-                reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                reader.BaseStream.Position = pos;
             }
         }
 
@@ -107,7 +107,7 @@
             try {
                 return reader.ReadUInt64();
             } finally {
-                reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                reader.BaseStream.Position = pos;
             }
         }
     }

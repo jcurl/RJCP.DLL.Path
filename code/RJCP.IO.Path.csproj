@@ -61,6 +61,7 @@
   <ItemGroup>
     <PackageReference Include="RJCP.MSBuildTasks" Version="0.2.4" PrivateAssets="all" />
     <ProjectReference Include="..\..\environment\Environment\RJCP.Environment.csproj" />
+    <ProjectReference Include="..\..\datastructures\Datastructures\RJCP.Core.Datastructures.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,6 +70,14 @@
     <Compile Include="Files\Exe\FileMachineType.cs" />
     <Compile Include="Files\Exe\FileTargetOs.cs" />
     <Compile Include="Files\Exe\UnixElfExecutable.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf32_dyn.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf32_hdr.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf32_shdr.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf64_dyn.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf64_phdr.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf32_phdr.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf64_hdr.cs" />
+    <Compile Include="Files\Exe\Unix\ElfHeader+elf64_shdr.cs" />
     <Compile Include="Files\Exe\Unix\ElfHeader.cs" />
     <Compile Include="Files\Exe\WindowsSubsystem.cs" />
     <None Include="Files\Exe\Win32\PEHeader+IMAGE_DATA_DIRECTORY.cs" />

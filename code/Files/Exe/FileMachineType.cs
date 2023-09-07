@@ -48,6 +48,61 @@
         /// <summary>
         /// The machine type is DEC Alpha.
         /// </summary>
-        Alpha
+        Alpha,
+
+        /// <summary>
+        /// The machine type is Power PC.
+        /// </summary>
+        PowerPC,
+
+        /// <summary>
+        /// The machine type is PowerPC 64-bit.
+        /// </summary>
+        PowerPC64,
+
+        /// <summary>
+        /// The machine type is Sparc.
+        /// </summary>
+        Sparc,
+
+        /// <summary>
+        /// The machine type is SparcV9.
+        /// </summary>
+        SparcV9,
+
+        /// <summary>
+        /// The machine type is Risc-V.
+        /// </summary>
+        RiscV,
+
+        /// <summary>
+        /// The machine type is MIPS.
+        /// </summary>
+        Mips,
+
+        /// <summary>
+        /// The machine type is HP-PARISC.
+        /// </summary>
+        PARISC,
+
+        /// <summary>
+        /// The machine type is IBM S390x.
+        /// </summary>
+        S390x,
+
+        /// <summary>
+        /// The machine type is Motorola 68000.
+        /// </summary>
+        M68k,
+
+        /// <summary>
+        /// The machine type is Digital VAX.
+        /// </summary>
+        Vax,
+
+        /// <summary>
+        /// The machine type is Super H.
+        /// </summary>
+        SuperH,
     }
 }

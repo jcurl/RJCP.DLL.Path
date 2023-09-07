@@ -1,6 +1,7 @@
 ﻿namespace RJCP.IO.Files.Exe
 {
     using System;
+    using System.IO;
 
     /// <summary>
     /// Get properties about a potentially executable file.
@@ -16,7 +17,37 @@
         /// executable format.
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException"><paramref name="path"/> is invalid (empty or whitespace).</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="path"/> is invalid (empty or whitespace).
+        /// <para>- or -</para>
+        /// .NET Framework and .NET Core versions older than 2.1: path is an empty string (""), contains only white
+        /// space, or contains one or more invalid characters.
+        /// <para>- or -</para>
+        /// <paramref name="path"/> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS
+        /// environment.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="path"/> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS
+        /// environment.
+        /// </exception>
+        /// <exception cref="FileNotFoundException">
+        /// The file specified by <paramref name="path"/> does not exist.
+        /// </exception>
+        /// <exception cref="IOException">
+        /// The file is invalid, or cannot be properly read.
+        /// <para>- or -</para>
+        /// An I/O error specified by <paramref name="path"/> occurred.
+        /// </exception>
+        /// <exception cref="System.Security.SecurityException">
+        /// The caller does not have the required permission.
+        /// </exception>
+        /// <exception cref="DirectoryNotFoundException">
+        /// The specified path is invalid, such as being on an unmapped drive.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">Access is not permitted by the operating system.</exception>
+        /// <exception cref="PathTooLongException">
+        /// The specified path, file name, or both exceed the system-defined maximum length.
+        /// </exception>
         /// <remarks>
         /// If the file is not recognisable, then <see langword="null"/> is returned. Otherwise an object deriving from
         /// this class <see cref="FileExecutable"/> is returned. Note, that if the result is not <see langword="null"/>,
@@ -28,7 +59,15 @@
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Invalid path", nameof(path));
-            return WindowsExecutable.GetFile(path);
+
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (BinaryReader br = new BinaryReader(fs)) {
+                FileExecutable exe = WindowsExecutable.GetFile(br);
+                if (exe != null) return exe;
+
+                fs.Position = 0;
+                return UnixElfExecutable.GetFile(br);
+            }
         }
 
         /// <summary>

@@ -64,9 +64,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="ArrayBufferExtensions.cs" />
     <Compile Include="FileSystemNodeInfoTest.cs" />
+    <Compile Include="Files\Exe\ElfGen\ElfHdr.cs" />
+    <Compile Include="Files\Exe\ElfGen\ElfPHdr.cs" />
+    <Compile Include="Files\Exe\ElfGen\ElfSHdr.cs" />
+    <Compile Include="Files\Exe\ElfGen\StringSection.cs" />
+    <Compile Include="Files\Exe\ElfGen\StringSectionEntry.cs" />
     <Compile Include="Files\Exe\FileExecutableTest.cs" />
+    <Compile Include="Files\Exe\UnixElfExecutableAccessor.cs" />
+    <Compile Include="Files\Exe\UnixElfExecutableTest.cs" />
     <Compile Include="Files\Exe\WindowsExecutableTest.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="SparseStream.cs" />
+    <Compile Include="SparseStreamTest.cs" />
     <Compile Include="UnixPathTest.cs" />
     <Compile Include="WindowsPathTest.cs" />
   </ItemGroup>

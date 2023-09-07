@@ -93,6 +93,11 @@ namespace RJCP.FileInfo
                         Console.WriteLine($" Executable Image Vers:   {winExe.ImageVersion}");
                         Console.WriteLine($" Executable SubSys Vers:  {winExe.SubsystemVersion}");
                     }
+
+                    if (fileExecutable is UnixElfExecutable elfExe) {
+                        Console.WriteLine($" Executable Is Core:      {elfExe.IsCore}");
+                        Console.WriteLine($" Executable Is PIE:       {elfExe.IsPositionIndependent}");
+                    }
                 }
                 Console.WriteLine("");
             }
