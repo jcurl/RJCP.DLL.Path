@@ -301,14 +301,26 @@ namespace RJCP.IO.Files.Exe
         [Conditional("DUMPELF")]
         private static void Dump(BinaryReader br, ref ElfHeader.elf32_hdr hdr)
         {
-            if (hdr.e_type != ElfHeader.ET_EXEC && hdr.e_type != ElfHeader.ET_DYN) return;
-
+            Console.WriteLine("Class: {0}", hdr.e_ident[ElfHeader.EI_CLASS] == ElfHeader.ELFCLASS32 ? 32 : 64);
+            Console.WriteLine("Data: {0}", hdr.e_ident[ElfHeader.EI_DATA] == ElfHeader.ELFDATA2LSB ? "LE" : "BE");
+            Console.WriteLine("ABI: {0}", hdr.e_ident[ElfHeader.EI_OSABI]);
+            Console.WriteLine("ABIVer: {0}", hdr.e_ident[ElfHeader.EI_ABIVERSION]);
+            Console.WriteLine("Type: {0}", hdr.e_type);
+            Console.WriteLine("Machine: 0x{0:x4}", hdr.e_machine);
+            Console.WriteLine("Entry: 0x{0:x8}", hdr.e_entry);
+            Console.WriteLine("Flags: 0x{0:x8}", hdr.e_flags);
             Console.WriteLine("ELF Program Headers");
             for (int i = 0; i < hdr.e_phnum; i++) {
                 if (!GetPrgHeader(br, ref hdr, i).TryGet(out var phdr)) return;
                 switch (phdr.p_type) {
+                case ElfHeader.PT_PHDR:
+                    Console.WriteLine("  PT_PHDR");
+                    break;
                 case ElfHeader.PT_INTERP:
-                    Console.WriteLine($"  PT_INTERP");
+                    Console.WriteLine("  PT_INTERP");
+                    break;
+                case ElfHeader.PT_TLS:
+                    Console.WriteLine("  PT_TLS");
                     break;
                 case ElfHeader.PT_DYNAMIC:
                     ulong dynlen = phdr.p_filesz;
@@ -316,7 +328,7 @@ namespace RJCP.IO.Files.Exe
                         br.BaseStream.Position = phdr.p_offset;
                         while (true) {
                             if (!GetDynElement(br, ref hdr, ref phdr).TryGet(out var dyn)) break;
-                            Console.WriteLine($"  PT_DYNAMIC: {dyn.d_tag:x8} = {dyn.d_val:x8}");
+                            Console.WriteLine($"  PT_DYNAMIC: {dyn.d_tag:x8} = {dyn.d_val:x8} ({GetDynTag(dyn.d_tag)})");
                             if (dyn.d_tag == ElfHeader.DT_NULL) break;
                         }
                     }
@@ -338,14 +350,26 @@ namespace RJCP.IO.Files.Exe
         [Conditional("DUMPELF")]
         private static void Dump(BinaryReader br, ref ElfHeader.elf64_hdr hdr)
         {
-            if (hdr.e_type != ElfHeader.ET_EXEC && hdr.e_type != ElfHeader.ET_DYN) return;
-
+            Console.WriteLine("Class: {0}", hdr.e_ident[ElfHeader.EI_CLASS] == ElfHeader.ELFCLASS32 ? 32 : 64);
+            Console.WriteLine("Data: {0}", hdr.e_ident[ElfHeader.EI_DATA] == ElfHeader.ELFDATA2LSB ? "LE" : "BE");
+            Console.WriteLine("ABI: {0}", hdr.e_ident[ElfHeader.EI_OSABI]);
+            Console.WriteLine("ABIVer: {0}", hdr.e_ident[ElfHeader.EI_ABIVERSION]);
+            Console.WriteLine("Type: {0}", hdr.e_type);
+            Console.WriteLine("Machine: 0x{0:x4}", hdr.e_machine);
+            Console.WriteLine("Entry: 0x{0:x8}", hdr.e_entry);
+            Console.WriteLine("Flags: 0x{0:x8}", hdr.e_flags);
             Console.WriteLine("ELF Program Headers");
             for (int i = 0; i < hdr.e_phnum; i++) {
                 if (!GetPrgHeader(br, ref hdr, i).TryGet(out var phdr)) return;
                 switch (phdr.p_type) {
+                case ElfHeader.PT_PHDR:
+                    Console.WriteLine("  PT_PHDR");
+                    break;
                 case ElfHeader.PT_INTERP:
-                    Console.WriteLine($"  PT_INTERP");
+                    Console.WriteLine("  PT_INTERP");
+                    break;
+                case ElfHeader.PT_TLS:
+                    Console.WriteLine("  PT_TLS");
                     break;
                 case ElfHeader.PT_DYNAMIC:
                     ulong dynlen = phdr.p_filesz;
@@ -353,7 +377,7 @@ namespace RJCP.IO.Files.Exe
                         br.BaseStream.Position = (long)phdr.p_offset;
                         while (true) {
                             if (!GetDynElement(br, ref hdr, ref phdr).TryGet(out var dyn)) break;
-                            Console.WriteLine($"  PT_DYNAMIC: {dyn.d_tag:x8} = {dyn.d_val:x8}");
+                            Console.WriteLine($"  PT_DYNAMIC: {dyn.d_tag:x8} = {dyn.d_val:x8} ({GetDynTag(dyn.d_tag)})");
                             if (dyn.d_tag == ElfHeader.DT_NULL) break;
                         }
                     }
@@ -368,6 +392,19 @@ namespace RJCP.IO.Files.Exe
             for (int i = 0; i < hdr.e_shnum; i++) {
                 if (!GetSectionHeader(br, ref hdr, i).TryGet(out var shdr)) return;
                 Console.WriteLine($"  shdr.sh_name = {shdr.sh_name:x8}; .sh_type = {shdr.sh_type:x8} .sh_offset = {shdr.sh_offset:x8} ({GetString(strTable, shdr.sh_name)})");
+            }
+        }
+
+        private static string GetDynTag(long dynTag)
+        {
+            switch (dynTag) {
+            case ElfHeader.DT_NEEDED: return "DT_NEEDED";
+            case ElfHeader.DT_HASH: return "DT_HASH";
+            case ElfHeader.DT_SONAME: return "DT_SONAME";
+            case ElfHeader.DT_RPATH: return "DT_RPATH";
+            case ElfHeader.DT_FLAGS: return "DT_FLAGS";
+            case ElfHeader.DT_FLAGS_1: return "DT_FLAGS_1";
+            default: return "";
             }
         }
 
