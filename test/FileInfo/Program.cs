@@ -25,7 +25,14 @@ namespace RJCP.FileInfo
             FileSystemNodeInfo first = null;
             bool identical = true;
             foreach (string arg in args) {
-                Path path = Path.ToPath(arg);
+                Path path;
+                try {
+                    path = Path.ToPath(arg);
+                } catch (ArgumentException ex) {
+                    Console.WriteLine($"Invalid path: {arg} ({ex.Message})");
+                    return 1;
+                }
+
                 FileSystemNodeInfo info;
                 try {
                     info = new FileSystemNodeInfo(path, false);
@@ -77,7 +84,13 @@ namespace RJCP.FileInfo
                 }
 
                 // Check the file contents:
-                FileExecutable fileExecutable = FileExecutable.GetFile(arg);
+                FileExecutable fileExecutable = null;
+                try {
+                    fileExecutable = FileExecutable.GetFile(arg);
+                } catch (System.IO.IOException) { /* Pass through */
+                } catch (UnauthorizedAccessException) { /* Pass through */
+                }
+
                 if (fileExecutable != null) {
                     Console.WriteLine($" Executable Machine Type: {fileExecutable.MachineType}");
                     Console.WriteLine($" Executable Target OS:    {fileExecutable.TargetOs}");
