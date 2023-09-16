@@ -31,6 +31,12 @@ namespace RJCP.IO.FileSystem
         public abstract string LinkTarget { get; }
 
         /// <summary>
+        /// Gets the path of the file.
+        /// </summary>
+        /// <value>The path.</value>
+        public abstract string Path { get; }
+
+        /// <summary>
         /// Determines whether the specified <see cref="object"/> is equal to this instance.
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>

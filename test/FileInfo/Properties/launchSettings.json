@@ -2,7 +2,8 @@
   "profiles": {
     "FileInfo": {
       "commandName": "Project",
-      "commandLineArgs": "X:\\work\\Computer\\Programming\\!Projects\\RJCP.Framework\\Path\\FileInfoCheck\\linux-amd64\\core"
+      "commandLineArgs": "Users\\jcurl",
+      "workingDirectory": "c:\\"
     }
   }
 }

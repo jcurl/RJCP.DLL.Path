@@ -89,6 +89,7 @@ namespace RJCP.FileInfo
                     fileExecutable = FileExecutable.GetFile(arg);
                 } catch (System.IO.IOException) { /* Pass through */
                 } catch (UnauthorizedAccessException) { /* Pass through */
+                } catch (ArgumentException) { /* Pass through */
                 }
 
                 if (fileExecutable != null) {

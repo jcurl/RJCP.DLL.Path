@@ -7,5 +7,7 @@
         NodeInfoType Type { get; }
 
         string LinkTarget { get; }
+
+        string Path { get; }
     }
 }

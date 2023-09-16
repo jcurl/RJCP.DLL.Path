@@ -80,6 +80,13 @@
     <Compile Include="Files\Exe\Unix\ElfHeader+elf64_shdr.cs" />
     <Compile Include="Files\Exe\Unix\ElfHeader.cs" />
     <Compile Include="Files\Exe\WindowsSubsystem.cs" />
+    <Compile Include="Native\Win32\NtDll+FILE_INFORMATION_CLASS.cs" />
+    <Compile Include="Native\Win32\NtDll+FILE_NAME_INFORMATION.cs" />
+    <Compile Include="Native\Win32\NtDll+IO_STATUS_BLOCK.cs" />
+    <Compile Include="Native\Win32\NtDll+OBJECT_INFORMATION_CLASS.cs" />
+    <Compile Include="Native\Win32\NtDll+OBJECT_NAME_INFORMATION.cs" />
+    <Compile Include="Native\Win32\NtDll+UNICODE_STRING.cs" />
+    <Compile Include="Native\Win32\NtDll.cs" />
     <None Include="Files\Exe\Win32\PEHeader+IMAGE_DATA_DIRECTORY.cs" />
     <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_DLLCHARACTERISTICS.cs" />
     <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_DOS_HEADER.cs" />

@@ -11,17 +11,23 @@
     /// </remarks>
     internal sealed class GenericNodeInfo : NodeInfo<GenericNodeInfo>
     {
-        private readonly string m_Path;
         private readonly StringComparison m_CaseSensitive;
         private readonly int m_HashCode;
 
         public GenericNodeInfo(string path, bool caseSensitive)
         {
-            m_Path = path;
-            m_CaseSensitive = caseSensitive ?
-                StringComparison.InvariantCulture :
-                StringComparison.InvariantCultureIgnoreCase;
-            m_HashCode = path.GetHashCode();
+            if (!System.IO.Path.IsPathRooted(path)) {
+                Path = IO.Path.ToPath(Environment.CurrentDirectory).Append(path).ToString();
+            } else {
+                Path = path;
+            }
+            if (caseSensitive) {
+                m_CaseSensitive = StringComparison.InvariantCulture;
+                m_HashCode = Path.ToUpper().GetHashCode();
+            } else {
+                m_CaseSensitive = StringComparison.InvariantCultureIgnoreCase;
+                m_HashCode = Path.GetHashCode();
+            }
         }
 
         public override NodeInfoType Type
@@ -31,9 +37,11 @@
 
         public override string LinkTarget { get; }
 
+        public override string Path { get; }
+
         protected override bool Equals(GenericNodeInfo other)
         {
-            return m_Path.Equals(other.m_Path, m_CaseSensitive);
+            return Path.Equals(other.Path, m_CaseSensitive);
         }
 
         public override int GetHashCode()

@@ -81,26 +81,21 @@
             if (path == null) throw new ArgumentNullException(nameof(path));
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Empty path", nameof(path));
 
-            if (System.IO.Path.IsPathRooted(path)) {
-                Path = IO.Path.ToPath(Environment.CurrentDirectory).Append(path).ToString();
-            } else {
-                Path = path;
-            }
-
-            if (!File.Exists(Path) && !Directory.Exists(Path))
-                throw new FileNotFoundException($"Path '{Path}' not found");
+            if (!File.Exists(path) && !Directory.Exists(path))
+                throw new FileNotFoundException($"Path '{path}' not found");
 
             if (Platform.IsWinNT()) {
-                m_NodeInfo = new Win32NodeInfo(Path, resolveLink);
+                m_NodeInfo = new Win32NodeInfo(path, resolveLink);
             } else {
-                m_NodeInfo = new MonoUnixNodeInfo(Path, resolveLink);
+                m_NodeInfo = new MonoUnixNodeInfo(path, resolveLink);
             }
 
             if (m_NodeInfo.Type != NodeInfoType.None) {
                 LinkTarget = m_NodeInfo.LinkTarget;
             } else {
-                m_NodeInfo = new GenericNodeInfo(Path, false);
+                m_NodeInfo = new GenericNodeInfo(path, false);
             }
+            Path = m_NodeInfo.Path ?? path;
         }
 
         /// <summary>

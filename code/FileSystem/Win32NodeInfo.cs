@@ -8,6 +8,7 @@
     using System.Text;
     using Microsoft.Win32.SafeHandles;
     using Native.Win32;
+    using RJCP.Core;
 
     /// <summary>
     /// Get file information for Windows Operating Systems.
@@ -39,25 +40,22 @@
 
         public Win32NodeInfo(string path, bool resolveLinks)
         {
-#if NETSTANDARD
-            int idInfoSize = Marshal.SizeOf<Kernel32.FILE_ID_INFO>();
-#else
-            int idInfoSize = Marshal.SizeOf(typeof(Kernel32.FILE_ID_INFO));
-#endif
+            SafeFileHandle file = GetFileHandle(path, false).Value;
+            if (GetTarget(file).TryGet(out string finalPath))
+                Path = finalPath;
 
-            SafeFileHandle file = GetFileHandle(path, false, true);
             try {
                 // Get the link target of the path, without resolving.
                 bool result = Kernel32.GetFileInformationByHandle(file, out Kernel32.BY_HANDLE_FILE_INFORMATION fileInfoByHandle);
                 if (result) {
                     if ((fileInfoByHandle.FileAttributes & Kernel32.FileAttributeFlags.FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
-                        LinkTarget = GetLinkTarget(path, file);
+                        LinkTarget = GetLinkTarget(path, file).Value;
                         if (resolveLinks) {
                             if (LinkTarget == null)
                                 throw new FileNotFoundException($"Link {path} can't be resolved", path);
 
                             file.Close();
-                            file = GetFileHandle(path, true, true);
+                            file = GetFileHandle(path, true).Value;
                             result = Kernel32.GetFileInformationByHandle(file, out fileInfoByHandle);
                             if (!result)
                                 throw new FileNotFoundException($"Resolved File {LinkTarget} not found", LinkTarget);
@@ -69,6 +67,7 @@
 
                 if (Api.GetFileInformationByHandleEx) {
                     try {
+                        int idInfoSize = Marshal.SizeOf(typeof(Kernel32.FILE_ID_INFO));
                         bool resultEx = Kernel32.GetFileInformationByHandleEx(file, Kernel32.FILE_INFO_BY_HANDLE_CLASS.FileIdInfo,
                             out Kernel32.FILE_ID_INFO fileInfoEx, idInfoSize);
                         if (resultEx) {
@@ -104,7 +103,7 @@
 
         private static readonly SafeFileHandle InvalidFile = new SafeFileHandle(IntPtr.Zero, false);
 
-        private static SafeFileHandle GetFileHandle(string path, bool resolveLinks, bool throwOnError)
+        private static Result<SafeFileHandle> GetFileHandle(string path, bool resolveLinks)
         {
             SafeFileHandle file;
             if (File.Exists(path)) {
@@ -126,64 +125,18 @@
                     Kernel32.FileShare.FILE_SHARE_READ | Kernel32.FileShare.FILE_SHARE_WRITE,
                     IntPtr.Zero, Kernel32.CreationDisposition.OPEN_EXISTING, createFlags, IntPtr.Zero);
             } else {
-                if (throwOnError)
-                    throw new FileNotFoundException($"Link {path} not found", path);
-                return InvalidFile;
+                return Result.FromException<SafeFileHandle>(new FileNotFoundException($"Link {path} not found", path));
             }
 
             if (file.IsInvalid) {
-                if (throwOnError) {
-                    Exception ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    throw new FileNotFoundException($"Link {path} not found", path, ex);
-                }
+                Exception ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return Result.FromException<SafeFileHandle>(new FileNotFoundException($"Link {path} not found", path, ex));
             }
             return file;
         }
 
-        /// <summary>
-        /// Gets the link to the target.
-        /// </summary>
-        /// <param name="path">The path of the reparse point.</param>
-        /// <returns>The string with the link to the target.</returns>
-        /// <exception cref="FileNotFoundException">Link <paramref name="path"/> can't be resolved</exception>
-        /// <remarks>
-        /// It opens the file so that the end target is resolved, and gets the name of the file. This function assumes
-        /// that <paramref name="path"/> is already determined to be a reparse point.
-        /// </remarks>
-        private static string GetLinkTarget(string path)
+        private static Result<string> GetTarget(SafeFileHandle targetHandle)
         {
-            return GetLinkTarget(path, InvalidFile);
-        }
-
-        /// <summary>
-        /// Gets the link to the target.
-        /// </summary>
-        /// <param name="path">The path of the reparse point.</param>
-        /// <param name="unresolvedLink">
-        /// The already opened handle to the reparse point, so it doesn't need to be opened twice.
-        /// </param>
-        /// <returns>The string with the link to the target.</returns>
-        /// <exception cref="FileNotFoundException">Link <paramref name="path"/> can't be resolved</exception>
-        /// <remarks>
-        /// It opens the file so that the end target is resolved, and gets the name of the file. This function assumes
-        /// that <paramref name="path"/> is already determined to be a reparse point. If opening the path fails, the
-        /// <paramref name="unresolvedLink"/> is then used to get the reparse point information which contains the link.
-        /// Therefore, it is important that the <paramref name="unresolvedLink"/> was already opened with
-        /// <see cref="GetFileHandle(string, bool, bool)"/> without resolving links.
-        /// </remarks>
-        private static string GetLinkTarget(string path, SafeFileHandle unresolvedLink)
-        {
-            SafeFileHandle file = GetFileHandle(path, true, false);
-            if (file.IsInvalid) {
-                // Getting the resolved link failed, so we open the symbolic link itself. If there is a problem, an
-                // exception is raised. So we know the file handle is valid.
-                if (unresolvedLink.IsInvalid) {
-                    return GetLinkTargetResolve(path, false);
-                } else {
-                    return GetLinkTargetResolve(path, unresolvedLink, false);
-                }
-            }
-
             // Note, this is always called at least once, even on Windows XP, until we determine the API doesn't exist.
             if (Api.GetFinalPathNameByHandle) {
                 // See https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
@@ -203,16 +156,22 @@
 
                         // Windows Vista and later. On Windows XP, we don't support symlinks (fsutil doesn't, and most utils
                         // don't properly support them either).
-                        int len = Kernel32.GetFinalPathNameByHandle(file, buffer, 32768, 0);
+                        int len = Kernel32.GetFinalPathNameByHandle(targetHandle, buffer, 32768, 0);
                         if (len < 0) {
-                            Exception ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            throw new FileNotFoundException($"Link {path} can't be resolved", path, ex);
+                            return Result.FromException<string>(Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()));
                         } else if (len > 32768) {
-                            throw new FileNotFoundException($"Link {path} can't be resolved", path);
+                            return Result.FromException<string>(new FileNotFoundException("Handle cannot be resolved"));
                         }
 
                         string target = new string(buffer, 0, len);
-                        if (target.StartsWith(@"\\?\"))
+                        if (target.StartsWith(@"\\?\UNC\")) {
+#if NETSTANDARD
+                            string uncPath = target[8..];
+#else
+                            string uncPath = target.Substring(8);
+#endif
+                            return string.Format(@"\\{0}", uncPath);
+                        } else if (target.StartsWith(@"\\?\"))
 #if NETSTANDARD
                             return target[4..];
 #else
@@ -222,9 +181,153 @@
                     }
                 } catch (EntryPointNotFoundException) {
                     Api.DisableGetFinalPathNameByHandle();
-                } finally {
-                    file.Close();
                 }
+            }
+
+            // Finally, to get it working on Windows XP, we have to revert to querying the objects directly.
+            string ntTargetFileName = NtQueryInformationFile(targetHandle);
+            if (ntTargetFileName == null)
+                return Result.FromException<string>(new FileNotFoundException("Handle NtQueryInformationFile failed"));
+
+            string ntObjectName = NtQueryObjectNameInformation(targetHandle);
+            if (ntObjectName == null)
+                return Result.FromException<string>(new FileNotFoundException("Handle NtQueryObject for ObjectNameInformation failed"));
+
+            // Calculate the device name
+            string deviceName = null;
+            if (ntObjectName.EndsWith(ntTargetFileName)) {
+                deviceName = ntObjectName.Substring(0, ntObjectName.Length - ntTargetFileName.Length);
+            }
+
+            // Try to map the device name to a DOS drive letter.
+            string dosPath = QueryDosDeviceSubstitute(deviceName, ntTargetFileName);
+            if (dosPath != null) return dosPath;
+            return $"\\{ntTargetFileName}";
+        }
+
+        private static string NtQueryInformationFile(SafeFileHandle targetHandle)
+        {
+            IntPtr ipFileName = IntPtr.Zero;
+            try {
+                ipFileName = Marshal.AllocHGlobal(32768);
+                int ntstatus = NtDll.NtQueryInformationFile(targetHandle, out NtDll.IO_STATUS_BLOCK iosb,
+                    ipFileName, 32768, NtDll.FILE_INFORMATION_CLASS.FileNameInformation);
+                if (ntstatus != 0) return null;
+
+                NtDll.FILE_NAME_INFORMATION objFileName =
+                    (NtDll.FILE_NAME_INFORMATION)Marshal.PtrToStructure(ipFileName, typeof(NtDll.FILE_NAME_INFORMATION));
+                if (objFileName.FileNameLength <= 0) return null;
+
+                // The file name is placed after the length, which is a ULONG (32-bit on Windows).
+                return Marshal.PtrToStringUni(ipFileName + 4, (int)objFileName.FileNameLength / 2);
+            } finally {
+                if (!ipFileName.Equals(IntPtr.Zero))
+                    Marshal.FreeHGlobal(ipFileName);
+            }
+        }
+
+        private static string NtQueryObjectNameInformation(SafeFileHandle targetHandle)
+        {
+            IntPtr ipObjName = IntPtr.Zero;
+            try {
+                int nLength = 260;
+                ipObjName = Marshal.AllocHGlobal(nLength);
+                int ntstatus = NtDll.NtQueryObject(targetHandle, NtDll.OBJECT_INFORMATION_CLASS.ObjectNameInformation,
+                    ipObjName, nLength, out nLength);
+                if (ntstatus != 0) {
+                    if (ntstatus != unchecked((int)0xc0000004)) return null;
+                    if (nLength <= 0 || nLength > 65536) return null;
+
+                    Marshal.FreeHGlobal(ipObjName);
+                    ipObjName = Marshal.AllocHGlobal(nLength);
+                    ntstatus = NtDll.NtQueryObject(targetHandle, NtDll.OBJECT_INFORMATION_CLASS.ObjectNameInformation,
+                        ipObjName, nLength, out nLength);
+                    if (ntstatus != 0) return null;
+                }
+
+                NtDll.OBJECT_NAME_INFORMATION objName =
+                    (NtDll.OBJECT_NAME_INFORMATION)Marshal.PtrToStructure(ipObjName, typeof(NtDll.OBJECT_NAME_INFORMATION));
+                if (objName.Name.Length <= 0) return null;
+                if (objName.Name.Buffer.Equals(IntPtr.Zero)) return null;
+                return Marshal.PtrToStringUni(objName.Name.Buffer, objName.Name.Length / 2);
+            } finally {
+                if (!ipObjName.Equals(IntPtr.Zero))
+                    Marshal.FreeHGlobal(ipObjName);
+            }
+        }
+
+        private static string QueryDosDeviceSubstitute(string device, string path)
+        {
+            unsafe {
+                byte* target = stackalloc byte[1024];
+                foreach (string drivePath in Environment.GetLogicalDrives()) {
+                    string drv = drivePath.Substring(0, 2);
+                    int result = Kernel32.QueryDosDevice(drv, target, 1024);
+                    if (result > 0 && result < 1024) {
+                        string dosDevice = Marshal.PtrToStringAnsi(new IntPtr(target));
+                        if (dosDevice.Equals(device)) {
+                            return $"{drv}{path}";
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the link to the target.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <returns>The string with the link to the target.</returns>
+        /// <exception cref="FileNotFoundException">Link <paramref name="path"/> can't be resolved</exception>
+        /// <remarks>
+        /// It opens the file so that the end target is resolved, and gets the name of the file. This function assumes
+        /// that <paramref name="path"/> is already determined to be a reparse point.
+        /// </remarks>
+        private static Result<string> GetLinkTarget(string path)
+        {
+            return GetLinkTarget(path, InvalidFile);
+        }
+
+        /// <summary>
+        /// Gets the link to the target.
+        /// </summary>
+        /// <param name="path">The path of the reparse point.</param>
+        /// <param name="unresolvedLink">
+        /// The already opened handle to the reparse point, so it doesn't need to be opened twice.
+        /// </param>
+        /// <returns>The string with the link to the target.</returns>
+        /// <remarks>
+        /// It opens the file so that the end target is resolved, and gets the name of the file. This function assumes
+        /// that <paramref name="path"/> is already determined to be a reparse point. If opening the path fails, the
+        /// <paramref name="unresolvedLink"/> is then used to get the reparse point information which contains the link.
+        /// Therefore, it is important that the <paramref name="unresolvedLink"/> was already opened with
+        /// <see cref="GetFileHandle(string, bool)"/> without resolving links.
+        /// <para>The following exceptions are returned as an error:</para>
+        /// <para>
+        /// <see cref="FileNotFoundException"/> - Link <paramref name="path"/> can't be resolved. See the inner
+        /// exception for more details.
+        /// </para>
+        /// </remarks>
+        private static Result<string> GetLinkTarget(string path, SafeFileHandle unresolvedLink)
+        {
+            if (!GetFileHandle(path, true).TryGet(out SafeFileHandle file)) {
+                // Getting the resolved link failed, so we open the symbolic link itself. If there is a problem, an
+                // exception is raised. So we know the file handle is valid.
+                if (unresolvedLink.IsInvalid) {
+                    return GetLinkTargetResolve(path, false);
+                } else {
+                    return GetLinkTargetResolve(path, unresolvedLink, false);
+                }
+            }
+
+            try {
+                Result<string> targetResult = GetTarget(file);
+                if (!targetResult.TryGet(out string target))
+                    return targetResult;
+                if (target != null) return target;
+            } finally {
+                file.Close();
             }
 
             // On Windows XP we should resolve the paths manually. Normally, we won't get recursion here (even if we do
@@ -241,19 +344,25 @@
         /// Gets the reparse link information with recursion.
         /// </summary>
         /// <param name="path">The path of the reparse point.</param>
-        /// <param name="throwOnRecursion">If recursion should result in an exception.</param>
+        /// <param name="mustResolve">Return an error if recursion fails that the final target cannot be found.</param>
         /// <returns>The last link the reparse point redirects to.</returns>
-        /// <exception cref="FileNotFoundException">
-        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
-        /// </exception>
         /// <remarks>
         /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
         /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// <para>The following exceptions are returned as an error:</para>
+        /// <para>
+        /// <see cref="FileNotFoundException"/> - Link <paramref name="path"/> can't be resolved. See the inner
+        /// exception for more details.
+        /// </para>
         /// </remarks>
-        private static string GetLinkTargetResolve(string path, bool throwOnRecursion)
+        private static Result<string> GetLinkTargetResolve(string path, bool mustResolve)
         {
-            using (SafeFileHandle file = GetFileHandle(path, false, true)) {
-                return GetLinkTargetResolve(path, file, throwOnRecursion);
+            var result = GetFileHandle(path, false);
+            if (!result.TryGet(out SafeFileHandle file))
+                return Result.FromException<string>(result.Error);
+
+            using (file) {
+                return GetLinkTargetResolve(path, file, mustResolve);
             }
         }
 
@@ -265,17 +374,19 @@
         /// The already opened handle to the reparse point from <paramref name="path"/>, so it doesn't need to be opened
         /// twice.
         /// </param>
-        /// <param name="throwOnRecursion">If recursion should result in an exception.</param>
+        /// <param name="mustResolve">Return an error if recursion fails that the final target cannot be found.</param>
         /// <returns>The last link the reparse point redirects to.</returns>
         /// <exception cref="ArgumentException">The parameter <paramref name="file"/> is not valid.</exception>
-        /// <exception cref="FileNotFoundException">
-        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
-        /// </exception>
         /// <remarks>
         /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
         /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// <para>The following exceptions are returned as an error:</para>
+        /// <para>
+        /// <see cref="FileNotFoundException"/> - Link <paramref name="path"/> can't be resolved. See the inner
+        /// exception for more details.
+        /// </para>
         /// </remarks>
-        private static string GetLinkTargetResolve(string path, SafeFileHandle file, bool throwOnRecursion)
+        private static Result<string> GetLinkTargetResolve(string path, SafeFileHandle file, bool mustResolve)
         {
             if (file.IsInvalid)
                 throw new ArgumentException("Invalid file handle");
@@ -283,17 +394,19 @@
             List<Kernel32.BY_HANDLE_FILE_INFORMATION> recursion = new List<Kernel32.BY_HANDLE_FILE_INFORMATION>();
             bool result = Kernel32.GetFileInformationByHandle(file, out Kernel32.BY_HANDLE_FILE_INFORMATION fileInfoByHandle);
             if (!result)
-                throw new FileNotFoundException($"File {path} not found", path);
+                return Result.FromException<string>(new FileNotFoundException($"File {path} not found", path));
             recursion.Add(fileInfoByHandle);
 
             string prevTarget = path;
-            string target = GetLinkTargetDirect(prevTarget, file);
+            Result<string> targetResult = GetLinkTargetDirect(prevTarget, file);
+            if (!targetResult.TryGet(out string target))
+                return Result.FromException<string>(targetResult.Error);
             if (target == null) return prevTarget;
 
             string unresolvedLink = target;
             do {
-                SafeFileHandle next = GetFileHandle(target, false, false);
-                if (next.IsInvalid) return target;
+                if (!GetFileHandle(target, false).TryGet(out SafeFileHandle next))
+                    return target;
                 try {
                     result = Kernel32.GetFileInformationByHandle(next, out fileInfoByHandle);
                     if (result) {
@@ -303,8 +416,8 @@
                                 info.FileIndexHigh == fileInfoByHandle.FileIndexHigh &&
                                 info.VolumeSerialNumber == fileInfoByHandle.VolumeSerialNumber) {
                                 // We have recursion.
-                                if (throwOnRecursion)
-                                    throw new FileNotFoundException($"Link {path} can't be resolved from recursion", target);
+                                if (mustResolve)
+                                    return Result.FromException<string>(new FileNotFoundException($"Link {path} can't be resolved from recursion", target));
                                 return unresolvedLink;
                             }
                         }
@@ -317,7 +430,9 @@
                     }
 
                     prevTarget = target;
-                    target = GetLinkTargetDirect(prevTarget, next);
+                    targetResult = GetLinkTargetDirect(prevTarget, next);
+                    if (!targetResult.TryGet(out target))
+                        return Result.FromException<string>(targetResult.Error);
                     if (target == null) {
                         return prevTarget;
                     }
@@ -354,16 +469,22 @@
         /// The link the reparse point redirects to. If the result is <see langword="null"/>, then the reparse tag is
         /// unknown.
         /// </returns>
-        /// <exception cref="FileNotFoundException">
-        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
-        /// </exception>
         /// <remarks>
         /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
         /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// <para>The following exceptions are returned as an error:</para>
+        /// <para>
+        /// <see cref="FileNotFoundException"/> - Link <paramref name="path"/> can't be resolved. See the inner
+        /// exception for more details.
+        /// </para>
         /// </remarks>
-        private static string GetLinkTargetDirect(string path)
+        private static Result<string> GetLinkTargetDirect(string path)
         {
-            using (SafeFileHandle file = GetFileHandle(path, false, true)) {
+            var result = GetFileHandle(path, false);
+            if (!result.TryGet(out SafeFileHandle file))
+                return Result.FromException<string>(result.Error);
+
+            using (file) {
                 return GetLinkTargetDirect(path, file);
             }
         }
@@ -381,14 +502,16 @@
         /// unknown.
         /// </returns>
         /// <exception cref="ArgumentException">The parameter <paramref name="file"/> is not valid.</exception>
-        /// <exception cref="FileNotFoundException">
-        /// Link <paramref name="path"/> can't be resolved. See the inner exception for more details.
-        /// </exception>
         /// <remarks>
         /// Uses specific I/O control codes to the file system to get the reparse points. This is using the Microsoft
         /// specific reparse points. As such, vendor specific reparse points are not parsed as they are unknown.
+        /// <para>The following exceptions are returned as an error:</para>
+        /// <para>
+        /// <see cref="FileNotFoundException"/> - Link <paramref name="path"/> can't be resolved. See the inner
+        /// exception for more details.
+        /// </para>
         /// </remarks>
-        private static string GetLinkTargetDirect(string path, SafeFileHandle file)
+        private static Result<string> GetLinkTargetDirect(string path, SafeFileHandle file)
         {
             if (file.IsInvalid)
                 throw new ArgumentException("Invalid file handle");
@@ -406,7 +529,7 @@
                     IntPtr.Zero, 0, outBuffer, outBufferSize, out int _, IntPtr.Zero);
                 if (!success) {
                     Exception ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    throw new FileNotFoundException($"Link {path} can't be resolved", path, ex);
+                    return Result.FromException<string>(new FileNotFoundException($"Link {path} can't be resolved", path, ex));
                 }
                 Kernel32.REPARSE_DATA_BUFFER_Generic genReparseDataBuffer =
                     (Kernel32.REPARSE_DATA_BUFFER_Generic)Marshal.PtrToStructure(outBuffer, typeof(Kernel32.REPARSE_DATA_BUFFER_Generic));
@@ -477,6 +600,8 @@
         public ulong FileIdHigh { get; }
 
         public override string LinkTarget { get; }
+
+        public override string Path { get; }
 
         protected override bool Equals(Win32NodeInfo other)
         {

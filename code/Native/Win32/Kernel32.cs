@@ -29,5 +29,8 @@
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         public static extern unsafe bool DeviceIoControl(SafeFileHandle file, int dwIoControlCode, IntPtr inBuffer, int inBufferSize, IntPtr outBuffer, int outBufferSize, out int bytesReturned, IntPtr lpOverlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, EntryPoint = "QueryDosDeviceA")]
+        public static extern unsafe int QueryDosDevice(string lpDeviceName, byte* lpTargetPath, int ucchMax);
     }
 }

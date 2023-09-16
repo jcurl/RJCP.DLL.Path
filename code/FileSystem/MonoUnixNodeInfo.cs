@@ -23,6 +23,7 @@
             info = UnixFileSystemInfo.GetFileSystemEntry(path);
             if (info == null || !info.Exists)
                 throw new FileNotFoundException($"File {path} not found", path);
+            Path = info.FullName;
 
             if (info.IsSymbolicLink) {
                 LinkTarget = GetLinkTarget(path);
@@ -96,6 +97,8 @@
         public override NodeInfoType Type { get { return NodeInfoType.MonoUnix; } }
 
         public override string LinkTarget { get; }
+
+        public override string Path { get; }
 
         public long Device { get; }
 
