@@ -25,22 +25,14 @@ namespace RJCP.FileInfo
             FileSystemNodeInfo first = null;
             bool identical = true;
             foreach (string arg in args) {
-                Path path;
-                try {
-                    path = Path.ToPath(arg);
-                } catch (ArgumentException ex) {
-                    Console.WriteLine($"Invalid path: {arg} ({ex.Message})");
-                    return 1;
-                }
-
                 FileSystemNodeInfo info;
                 try {
-                    info = new FileSystemNodeInfo(path, false);
+                    info = new FileSystemNodeInfo(arg, false);
                 } catch (System.IO.FileNotFoundException ex) {
-                    Console.WriteLine($"Couldn't find file: {path} ({ex.Message})");
+                    Console.WriteLine($"Couldn't find file: {arg} ({ex.Message})");
                     return 1;
                 } catch (System.IO.DirectoryNotFoundException ex) {
-                    Console.WriteLine($"Couldn't find directory: {path} ({ex.Message})");
+                    Console.WriteLine($"Couldn't find directory: {arg} ({ex.Message})");
                     return 1;
                 }
 
@@ -66,13 +58,13 @@ namespace RJCP.FileInfo
 
                 FileSystemNodeInfo resolved = null;
                 try {
-                    resolved = new FileSystemNodeInfo(path, true);
+                    resolved = new FileSystemNodeInfo(arg, true);
                 } catch (System.IO.FileNotFoundException ex) {
                     identical = false;
-                    Console.WriteLine($"Couldn't resolve file: {path} ({ex.Message})");
+                    Console.WriteLine($"Couldn't resolve file: {arg} ({ex.Message})");
                 } catch (System.IO.DirectoryNotFoundException ex) {
                     identical = false;
-                    Console.WriteLine($"Couldn't resolve dir: {path} ({ex.Message})");
+                    Console.WriteLine($"Couldn't resolve dir: {arg} ({ex.Message})");
                 }
 
                 if (resolved != null) {
