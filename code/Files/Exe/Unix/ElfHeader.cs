@@ -316,7 +316,7 @@
 #if NETFRAMEWORK
         private static ushort ReverseEndianness(ushort value)
         {
-            return (ushort)((value >> 8) + (value << 8));
+            return unchecked((ushort)((value >> 8) + (value << 8)));
         }
 
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Completeness")]
@@ -327,10 +327,10 @@
 
         private static uint ReverseEndianness(uint value)
         {
-            return (value >> 24) +
+            return unchecked((value >> 24) +
                 ((value & 0x00FF0000) >> 8) +
                 ((value & 0x0000FF00) << 8) +
-                ((value & 0x000000FF) << 24);
+                ((value & 0x000000FF) << 24));
         }
 
         private static int ReverseEndianness(int value)
@@ -340,14 +340,14 @@
 
         private static ulong ReverseEndianness(ulong value)
         {
-            return (value >> 56) +
+            return unchecked((value >> 56) +
                 ((value & 0x00FF000000000000) >> 40) +
                 ((value & 0x0000FF0000000000) >> 24) +
                 ((value & 0x000000FF00000000) >> 8) +
                 ((value & 0x00000000FF000000) << 8) +
                 ((value & 0x0000000000FF0000) << 24) +
                 ((value & 0x000000000000FF00) << 40) +
-                ((value & 0x00000000000000FF) << 56);
+                ((value & 0x00000000000000FF) << 56));
         }
 
         private static long ReverseEndianness(long value)
