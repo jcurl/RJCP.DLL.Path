@@ -5,6 +5,7 @@
     using System.IO;
     using ElfGen;
     using NUnit.Framework;
+    using RJCP.CodeQuality.IO;
     using RJCP.Core;
 
     [TestFixture(true, true)]

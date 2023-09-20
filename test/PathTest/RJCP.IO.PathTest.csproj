@@ -65,8 +65,6 @@
     <Compile Include="Files\Exe\UnixElfExecutableTest.cs" />
     <Compile Include="Files\Exe\WindowsExecutableTest.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="SparseStream.cs" />
-    <Compile Include="SparseStreamTest.cs" />
     <Compile Include="UnixPathTest.cs" />
     <Compile Include="WindowsPathTest.cs" />
   </ItemGroup>
