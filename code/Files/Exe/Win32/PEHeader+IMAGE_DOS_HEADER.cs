@@ -81,7 +81,7 @@
             public ushort e_ovno;      // Offset 26
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            private ushort[] e_res;     // Offset 28
+            private readonly ushort[] e_res;     // Offset 28
 
             /// <summary>
             /// OEM identifier (for e_oeminfo).
@@ -94,7 +94,7 @@
             public ushort e_oeminfo;   // Offset 38
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-            private ushort[] e_res2;    // Offset 40
+            private readonly ushort[] e_res2;    // Offset 40
 
             /// <summary>
             /// File address of new exe header.
