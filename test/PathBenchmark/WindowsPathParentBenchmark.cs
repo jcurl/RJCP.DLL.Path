@@ -4,11 +4,11 @@ namespace RJCP.IO
 
     public class WindowsPathParentBenchmark
     {
-        private static readonly Path DosRoot = new WindowsPath(@"C:\");
-        private static readonly Path DosSubDir = new WindowsPath(@"C:\path");
-        private static readonly Path UncRoot = new WindowsPath(@"\\srv\sh");
-        private static readonly Path UncSubDir = new WindowsPath(@"\\srv\sh\path");
-        private static readonly Path Relative = new WindowsPath(@".\foo\bar");
+        private static readonly WindowsPath DosRoot = new WindowsPath(@"C:\");
+        private static readonly WindowsPath DosSubDir = new WindowsPath(@"C:\path");
+        private static readonly WindowsPath UncRoot = new WindowsPath(@"\\srv\sh");
+        private static readonly WindowsPath UncSubDir = new WindowsPath(@"\\srv\sh\path");
+        private static readonly WindowsPath Relative = new WindowsPath(@".\foo\bar");
 
         [Benchmark]
         public Path DosParent() => DosSubDir.GetParent();

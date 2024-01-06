@@ -4,8 +4,8 @@
 
     public class UnixPathRelativeBenchmark
     {
-        private static readonly Path User = new UnixPath("/users/home/repository/project");
-        private static readonly Path Home = new UnixPath("/users/home");
+        private static readonly UnixPath User = new UnixPath("/users/home/repository/project");
+        private static readonly UnixPath Home = new UnixPath("/users/home");
 
         [Benchmark]
         public Path PinnedRelative() => User.GetRelative(Home);

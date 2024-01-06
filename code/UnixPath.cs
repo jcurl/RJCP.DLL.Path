@@ -344,7 +344,7 @@
             return GetRelativeUnix(winPath);
         }
 
-        private Path GetRelativeUnix(UnixPath basePath)
+        private UnixPath GetRelativeUnix(UnixPath basePath)
         {
             // If both are pinned, or both are unpinned, we can calculate the relative difference between the two. Else
             // return the current object.

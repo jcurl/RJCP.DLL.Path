@@ -4,9 +4,9 @@
 
     public class UnixPathParentBenchmark
     {
-        private static readonly Path ParentRootDir = new UnixPath("/");
-        private static readonly Path RootDir = new UnixPath("/path");
-        private static readonly Path Relative = new UnixPath("./foo/bar");
+        private static readonly UnixPath ParentRootDir = new UnixPath("/");
+        private static readonly UnixPath RootDir = new UnixPath("/path");
+        private static readonly UnixPath Relative = new UnixPath("./foo/bar");
 
         [Benchmark]
         public Path Parent() => RootDir.GetParent();

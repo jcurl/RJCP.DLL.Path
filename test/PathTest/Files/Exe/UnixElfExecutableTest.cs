@@ -28,7 +28,7 @@
             return new SparseStream(GetExeDynElfBlocks(machine, osabi, etype, ptinterp, symtab, soname, pie), 0x1000);
         }
 
-        private IList<SparseBlock> GetExeDynElfBlocks(int machine, byte osabi, int etype, bool ptinterp, bool symtab, bool soname, bool pie)
+        private List<SparseBlock> GetExeDynElfBlocks(int machine, byte osabi, int etype, bool ptinterp, bool symtab, bool soname, bool pie)
         {
             if (etype != 2 && etype != 3)
                 throw new ArgumentOutOfRangeException(nameof(etype), "Unknown e_type");
@@ -131,7 +131,7 @@
             return file;
         }
 
-        private IList<SparseBlock> GetInvalidElfPtInterpMulti(int machine, byte osabi, int etype, bool dll)
+        private List<SparseBlock> GetInvalidElfPtInterpMulti(int machine, byte osabi, int etype, bool dll)
         {
             if (etype != 2 && etype != 3)
                 throw new ArgumentOutOfRangeException(nameof(etype), "Unknown e_type");
@@ -219,7 +219,7 @@
             return file;
         }
 
-        private IList<SparseBlock> GetCoreElfBlocks(int machine, byte osabi)
+        private List<SparseBlock> GetCoreElfBlocks(int machine, byte osabi)
         {
             List<SparseBlock> file = new List<SparseBlock>();
             ElfHdr elfGen = new ElfHdr() {
@@ -1089,7 +1089,7 @@
         public void ElfStringTableSizeExactLength([Values(false, true)] bool overflow)
         {
             // Move the string section to the end of the file.
-            IList<SparseBlock> file = GetExeDynElfBlocks(3, 0, 3, false, true, false, false);
+            List<SparseBlock> file = GetExeDynElfBlocks(3, 0, 3, false, true, false, false);
             file.Add(new SparseBlock(0x1000, file[1].Data));  // Index 1 is the string section.
             int strlength = file[1].Data.Length;
             file.RemoveAt(1);
