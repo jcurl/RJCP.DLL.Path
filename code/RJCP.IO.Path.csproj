@@ -66,6 +66,9 @@
 
   <ItemGroup>
     <Compile Include="BinaryReaderExtensions.cs" />
+    <Compile Include="FileSystem\GenericExtended.cs" />
+    <Compile Include="FileSystem\MonoUnixExtended.cs" />
+    <Compile Include="FileSystem\Win32Extended.cs" />
     <Compile Include="Files\Exe\FileExecutable.cs" />
     <Compile Include="Files\Exe\FileMachineType.cs" />
     <Compile Include="Files\Exe\FileTargetOs.cs" />
@@ -79,14 +82,6 @@
     <Compile Include="Files\Exe\Unix\ElfHeader+elf64_hdr.cs" />
     <Compile Include="Files\Exe\Unix\ElfHeader+elf64_shdr.cs" />
     <Compile Include="Files\Exe\Unix\ElfHeader.cs" />
-    <Compile Include="Files\Exe\WindowsSubsystem.cs" />
-    <Compile Include="Native\Win32\NtDll+FILE_INFORMATION_CLASS.cs" />
-    <Compile Include="Native\Win32\NtDll+FILE_NAME_INFORMATION.cs" />
-    <Compile Include="Native\Win32\NtDll+IO_STATUS_BLOCK.cs" />
-    <Compile Include="Native\Win32\NtDll+OBJECT_INFORMATION_CLASS.cs" />
-    <Compile Include="Native\Win32\NtDll+OBJECT_NAME_INFORMATION.cs" />
-    <Compile Include="Native\Win32\NtDll+UNICODE_STRING.cs" />
-    <Compile Include="Native\Win32\NtDll.cs" />
     <None Include="Files\Exe\Win32\PEHeader+IMAGE_DATA_DIRECTORY.cs" />
     <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_DLLCHARACTERISTICS.cs" />
     <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_DOS_HEADER.cs" />
@@ -97,6 +92,7 @@
     <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_OPTIONAL_HEADER64.cs" />
     <Compile Include="Files\Exe\Win32\PEHeader+IMAGE_SUBSYSTEM.cs" />
     <Compile Include="Files\Exe\WindowsExecutable.cs" />
+    <Compile Include="Files\Exe\WindowsSubsystem.cs" />
     <Compile Include="FileSystemNodeInfo.cs" />
     <Compile Include="FileSystem\GenericNodeInfo.cs" />
     <Compile Include="FileSystem\INodeInfo.cs" />
@@ -104,6 +100,7 @@
     <Compile Include="FileSystem\NodeInfo.cs" />
     <Compile Include="FileSystem\Win32NodeInfo.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="IFileSystemExtended.cs" />
     <Compile Include="Internal\PathStack.cs" />
     <Compile Include="Native\Unix\GLibc6.cs" />
     <Compile Include="Native\Unix\SafeMallocHandle.cs" />
@@ -120,6 +117,13 @@
     <Compile Include="Native\Win32\Kernel32+REPARSE_DATA_BUFFER.cs" />
     <Compile Include="Native\Win32\Kernel32+SECURITY_IMPERSONATION_LEVEL.cs" />
     <Compile Include="Native\Win32\Kernel32.cs" />
+    <Compile Include="Native\Win32\NtDll+FILE_INFORMATION_CLASS.cs" />
+    <Compile Include="Native\Win32\NtDll+FILE_NAME_INFORMATION.cs" />
+    <Compile Include="Native\Win32\NtDll+IO_STATUS_BLOCK.cs" />
+    <Compile Include="Native\Win32\NtDll+OBJECT_INFORMATION_CLASS.cs" />
+    <Compile Include="Native\Win32\NtDll+OBJECT_NAME_INFORMATION.cs" />
+    <Compile Include="Native\Win32\NtDll+UNICODE_STRING.cs" />
+    <Compile Include="Native\Win32\NtDll.cs" />
     <Compile Include="NodeInfoType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Path.cs" />

@@ -9,5 +9,7 @@
         string LinkTarget { get; }
 
         string Path { get; }
+
+        IFileSystemExtended Extended { get; }
     }
 }

@@ -9,11 +9,16 @@ namespace RJCP.IO.FileSystem
     /// A common implementation for equality for <see cref="INodeInfo"/>.
     /// </summary>
     /// <typeparam name="T">The type of the object being implemented.</typeparam>
+    /// <typeparam name="TE">
+    /// The type of the extended information. This is downcasted to <see cref="IFileSystemExtended"/> through
+    /// <see cref="NodeInfo{T, TE}.Extended"/>, returning the property <see cref="NodeInfo{T, TE}.ExtendedInfo"/> which
+    /// is effectively aliased to avoid having to do excessive typecasting in implementations.
+    /// </typeparam>
     /// <remarks>
     /// Ensure that derived classes implement <see cref="object.GetHashCode"/> to complement the implementation of
     /// <see cref="Equals(object)"/> in this abstract class.
     /// </remarks>
-    internal abstract class NodeInfo<T> : INodeInfo where T : NodeInfo<T>
+    internal abstract class NodeInfo<T, TE> : INodeInfo where T : NodeInfo<T, TE> where TE : IFileSystemExtended
     {
         /// <summary>
         /// Gets the type of information obtained, which depends on the OS at runtime.
@@ -35,6 +40,22 @@ namespace RJCP.IO.FileSystem
         /// </summary>
         /// <value>The path.</value>
         public abstract string Path { get; }
+
+        /// <summary>
+        /// Gets the extended information based on the implementing type.
+        /// </summary>
+        /// <value>The extended information.</value>
+        /// <remarks>
+        /// Derived classes from this abstract class should override and use this concrete type, to provide for better
+        /// readable code. .NET C# doesn't support overriding methods with different return types.
+        /// </remarks>
+        protected abstract TE ExtendedInfo { get; }
+
+        /// <summary>
+        /// Gets the extended information, which the <see cref="FileSystemNodeInfo"/> can return.
+        /// </summary>
+        /// <value>The extended information.</value>
+        public IFileSystemExtended Extended { get { return ExtendedInfo; } }
 
         /// <summary>
         /// Determines whether the specified <see cref="object"/> is equal to this instance.

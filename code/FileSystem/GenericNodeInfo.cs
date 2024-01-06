@@ -9,7 +9,7 @@
     /// This class is generic and can only compare the name of the file, not the what the file actually points to. File
     /// names are not normalised prior.
     /// </remarks>
-    internal sealed class GenericNodeInfo : NodeInfo<GenericNodeInfo>
+    internal sealed class GenericNodeInfo : NodeInfo<GenericNodeInfo, GenericExtended>
     {
         private readonly StringComparison m_CaseSensitive;
         private readonly int m_HashCode;
@@ -38,6 +38,8 @@
         public override string LinkTarget { get; }
 
         public override string Path { get; }
+
+        protected override GenericExtended ExtendedInfo { get { return null; } }
 
         protected override bool Equals(GenericNodeInfo other)
         {

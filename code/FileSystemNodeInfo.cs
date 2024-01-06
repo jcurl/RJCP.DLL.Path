@@ -14,7 +14,7 @@
     /// identify the file precisely. Under windows, reparse points (softlinks and directory junctions) are considered
     /// different files. You'll need to get the reparse point and iterate to find the result file and compare that.
     /// </remarks>
-    public sealed partial class FileSystemNodeInfo : IEquatable<FileSystemNodeInfo>
+    public sealed class FileSystemNodeInfo : IEquatable<FileSystemNodeInfo>
     {
         private readonly INodeInfo m_NodeInfo;
 
@@ -125,6 +125,15 @@
         {
             get { return m_NodeInfo.Type; }
         }
+
+        /// <summary>
+        /// Gets the extended information for the file. This is Operating System specific.
+        /// </summary>
+        /// <value>
+        /// The extended file information that is available for the file. The value returned may be
+        /// <see langword="null"/> if there is no further information.
+        /// </value>
+        public IFileSystemExtended Extended { get { return m_NodeInfo.Extended; } }
 
         /// <summary>
         /// Determines whether the specified <see cref="object"/> is equal to this instance.

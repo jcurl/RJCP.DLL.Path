@@ -13,7 +13,7 @@
     /// This class depends on glibc v6 to work (the <c>readlink</c> function). If we ever support .NET 6.0 or later, we
     /// can use methods provided there.
     /// </remarks>
-    internal sealed class MonoUnixNodeInfo : NodeInfo<MonoUnixNodeInfo>
+    internal sealed class MonoUnixNodeInfo : NodeInfo<MonoUnixNodeInfo, MonoUnixExtended>
     {
         private readonly int m_HashCode;
 
@@ -37,19 +37,22 @@
                 }
             }
 
-            Device = info.Device;
-            DeviceType = info.DeviceType;
-            Inode = info.Inode;
+            ExtendedInfo.Device = info.Device;
+            ExtendedInfo.DeviceType = info.DeviceType;
+            ExtendedInfo.Inode = info.Inode;
+            ExtendedInfo.Mode = unchecked((int)info.Protection);
+            ExtendedInfo.UserId = info.OwnerUserId;
+            ExtendedInfo.GroupId = info.OwnerGroupId;
 
-            if (DeviceType != 0) {
+            if (ExtendedInfo.DeviceType != 0) {
                 // We don't care what the device/inode is for a device type file, because it doesn't matter where it is,
                 // it's still the same device. We set the upper bit if it's a device, else we clear it, to avoid a
                 // common conditions.
-                m_HashCode = unchecked((int)DeviceType | (int)0x80000000);
+                m_HashCode = unchecked((int)ExtendedInfo.DeviceType | (int)0x80000000);
             } else {
                 m_HashCode = unchecked(
-                    (((int)Device << 16) ^
-                    (int)Inode) & 0x7FFFFFFF
+                    (((int)ExtendedInfo.Device << 16) ^
+                    (int)ExtendedInfo.Inode) & 0x7FFFFFFF
                 );
             }
         }
@@ -100,17 +103,13 @@
 
         public override string Path { get; }
 
-        public long Device { get; }
-
-        public long DeviceType { get; }
-
-        public long Inode { get; }
+        protected override MonoUnixExtended ExtendedInfo { get; } = new MonoUnixExtended();
 
         protected override bool Equals(MonoUnixNodeInfo other)
         {
-            if (DeviceType != other.DeviceType) return false;
-            if (DeviceType != 0) return true;
-            return Device == other.Device && Inode == other.Inode;
+            if (ExtendedInfo.DeviceType != other.ExtendedInfo.DeviceType) return false;
+            if (ExtendedInfo.DeviceType != 0) return true;
+            return ExtendedInfo.Device == other.ExtendedInfo.Device && ExtendedInfo.Inode == other.ExtendedInfo.Inode;
         }
 
         public override int GetHashCode()

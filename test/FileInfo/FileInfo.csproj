@@ -15,7 +15,7 @@
     <RootNamespace>RJCP.FileInfo</RootNamespace>
 
     <Authors>Jason Curl</Authors>
-    <Copyright>(C) 2023, Jason Curl</Copyright>
+    <Copyright>(C) 2023-2024, Jason Curl</Copyright>
     <Company></Company>
 
     <Description>Small Test Application for testing the FileInfo API in an integrated environment.</Description>
@@ -52,8 +52,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="FileSystem\MonoUnixNodeInfo.cs" />
-    <Compile Include="FileSystem\Win32NodeInfo.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 

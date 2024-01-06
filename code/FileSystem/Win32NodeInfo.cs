@@ -13,7 +13,7 @@
     /// <summary>
     /// Get file information for Windows Operating Systems.
     /// </summary>
-    internal sealed class Win32NodeInfo : NodeInfo<Win32NodeInfo>
+    internal sealed class Win32NodeInfo : NodeInfo<Win32NodeInfo, Win32Extended>
     {
         private readonly int m_HashCode;
 
@@ -72,9 +72,9 @@
                             out Kernel32.FILE_ID_INFO fileInfoEx, idInfoSize);
                         if (resultEx) {
                             Type = NodeInfoType.WindowsExtended;
-                            VolumeSerialNumber = fileInfoEx.VolumeSerialNumber;
-                            FileIdHigh = fileInfoEx.FileIdHigh;
-                            FileIdLow = fileInfoEx.FileIdLow;
+                            ExtendedInfo.VolumeSerialNumber = unchecked((long)fileInfoEx.VolumeSerialNumber);
+                            ExtendedInfo.FileIdHigh = unchecked((long)fileInfoEx.FileIdHigh);
+                            ExtendedInfo.FileIdLow = unchecked((long)fileInfoEx.FileIdLow);
                             m_HashCode = unchecked(
                                 (int)fileInfoEx.VolumeSerialNumber ^
                                 ((int)fileInfoEx.FileIdHigh << 16) ^
@@ -88,9 +88,9 @@
                 }
 
                 Type = NodeInfoType.WindowsFileInfo;
-                VolumeSerialNumber = fileInfoByHandle.VolumeSerialNumber;
-                FileIdHigh = fileInfoByHandle.FileIndexHigh;
-                FileIdLow = fileInfoByHandle.FileIndexLow;
+                ExtendedInfo.VolumeSerialNumber = fileInfoByHandle.VolumeSerialNumber;
+                ExtendedInfo.FileIdHigh = fileInfoByHandle.FileIndexHigh;
+                ExtendedInfo.FileIdLow = fileInfoByHandle.FileIndexLow;
                 m_HashCode = unchecked(
                     (int)fileInfoByHandle.VolumeSerialNumber ^
                     ((int)fileInfoByHandle.FileIndexHigh << 16) ^
@@ -593,22 +593,18 @@
 
         public override NodeInfoType Type { get; }
 
-        public ulong VolumeSerialNumber { get; }
-
-        public ulong FileIdLow { get; }
-
-        public ulong FileIdHigh { get; }
-
         public override string LinkTarget { get; }
 
         public override string Path { get; }
 
+        protected override Win32Extended ExtendedInfo { get; } = new Win32Extended();
+
         protected override bool Equals(Win32NodeInfo other)
         {
             return Type == other.Type &&
-                VolumeSerialNumber == other.VolumeSerialNumber &&
-                FileIdHigh == other.FileIdHigh &&
-                FileIdLow == other.FileIdLow;
+                ExtendedInfo.VolumeSerialNumber == other.ExtendedInfo.VolumeSerialNumber &&
+                ExtendedInfo.FileIdHigh == other.ExtendedInfo.FileIdHigh &&
+                ExtendedInfo.FileIdLow == other.ExtendedInfo.FileIdLow;
         }
 
         public override int GetHashCode()

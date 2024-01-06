@@ -1,9 +1,9 @@
 namespace RJCP.FileInfo
 {
     using System;
-    using FileSystem;
     using RJCP.IO;
     using RJCP.IO.Files.Exe;
+    using RJCP.IO.FileSystem;
 
     /// <summary>
     /// File Info Program
@@ -43,16 +43,19 @@ namespace RJCP.FileInfo
                 switch (info.Type) {
                 case NodeInfoType.WindowsExtended:
                 case NodeInfoType.WindowsFileInfo:
-                    Win32NodeInfo winInfo = new Win32NodeInfo(info);
+                    Win32Extended winInfo = (Win32Extended)info.Extended;
                     Console.WriteLine($" VolumeSerialNumber: 0x{winInfo.VolumeSerialNumber:x016}");
                     Console.WriteLine($" FileIdHigh:         0x{winInfo.FileIdHigh:x016}");
                     Console.WriteLine($" FileIdLow:          0x{winInfo.FileIdLow:x016}");
                     break;
                 case NodeInfoType.MonoUnix:
-                    MonoUnixNodeInfo monoInfo = new MonoUnixNodeInfo(info);
+                    MonoUnixExtended monoInfo = (MonoUnixExtended)info.Extended;
                     Console.WriteLine($" DeviceType: 0x{monoInfo.DeviceType:x016}");
                     Console.WriteLine($" Device:     0x{monoInfo.Device:x016}");
                     Console.WriteLine($" I-Node:     0x{monoInfo.Inode:x016}");
+                    Console.WriteLine($" Mode:       0x{monoInfo.Mode:x08}");
+                    Console.WriteLine($" UserID:     {monoInfo.UserId}");
+                    Console.WriteLine($" GroupID:    {monoInfo.GroupId}");
                     break;
                 }
 
