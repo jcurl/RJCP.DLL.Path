@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFrameworks>net40;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net40;net60</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <Configurations>Debug;Release</Configurations>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <RollForward>Major</RollForward>
 
     <AssemblyName>FileInfoCheck</AssemblyName>
     <AssemblyTitle>FileInfoCheck</AssemblyTitle>
@@ -15,33 +14,30 @@
     <RootNamespace>RJCP.FileInfoCheck</RootNamespace>
 
     <Authors>Jason Curl</Authors>
-    <Copyright>(C) 2023, Jason Curl</Copyright>
+    <Copyright>(C) 2023-2024, Jason Curl</Copyright>
     <Company></Company>
-
     <Description>Integration Test Application comparing expected results from files.</Description>
     <Version>1.0.0</Version>
 
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Default</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
-
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
@@ -55,5 +51,4 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
   </ItemGroup>
-
 </Project>

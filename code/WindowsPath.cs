@@ -629,7 +629,7 @@
                 StringBuilder path = new StringBuilder();
                 path.Append(RootVolume);
                 if (IsPinned) path.Append('\\');
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
                 path.AppendJoin('\\', PathStack.Stack);
 #else
                 path.Append(string.Join(@"\", PathStack.Stack));

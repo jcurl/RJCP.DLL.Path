@@ -165,14 +165,14 @@
 
                         string target = new string(buffer, 0, len);
                         if (target.StartsWith(@"\\?\UNC\")) {
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
                             string uncPath = target[8..];
 #else
                             string uncPath = target.Substring(8);
 #endif
                             return string.Format(@"\\{0}", uncPath);
                         } else if (target.StartsWith(@"\\?\"))
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
                             return target[4..];
 #else
                             return target.Substring(4);
@@ -558,7 +558,7 @@
                     string symTarget = Encoding.Unicode.GetString(symReparseDataBuffer.PathBuffer,
                         symReparseDataBuffer.SubstituteNameOffset, symReparseDataBuffer.SubstituteNameLength);
                     if (symTarget.StartsWith(@"\??\"))
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
                         return symTarget[4..];
 #else
                         return symTarget.Substring(4);
@@ -576,7 +576,7 @@
                     string junTarget = Encoding.Unicode.GetString(junReparseDataBuffer.PathBuffer,
                         junReparseDataBuffer.SubstituteNameOffset, junReparseDataBuffer.SubstituteNameLength);
                     if (junTarget.StartsWith(@"\??\"))
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
                         return junTarget[4..];
 #else
                         return junTarget.Substring(4);

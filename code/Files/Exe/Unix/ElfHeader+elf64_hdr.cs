@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.InteropServices;
 
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
     using System.Buffers.Binary;
 #endif
 
@@ -114,7 +114,7 @@
                     if (e_ident[EI_DATA] == ELFDATA2MSB) return;
                 }
 
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
                 e_type = BinaryPrimitives.ReverseEndianness(e_type);
                 e_machine = BinaryPrimitives.ReverseEndianness(e_machine);
                 e_version = BinaryPrimitives.ReverseEndianness(e_version);

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFrameworks>net48;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net48;net60</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <Configurations>Debug;Release</Configurations>
+    <RollForward>Major</RollForward>
 
     <AssemblyName>RJCP.IO.PathBenchmark</AssemblyName>
     <AssemblyTitle>RJCP.IO.PathBenchmark</AssemblyTitle>
@@ -28,12 +27,12 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
   </PropertyGroup>
@@ -62,5 +61,4 @@
     <Compile Include="WindowsPathRelativeBenchmark.cs" />
     <Compile Include="WindowsPathTrimBenchmark.cs" />
   </ItemGroup>
-
 </Project>

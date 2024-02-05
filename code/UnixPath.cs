@@ -449,7 +449,7 @@
             } else {
                 StringBuilder path = new StringBuilder();
                 if (IsPinned) path.Append('/');
-#if NETSTANDARD
+#if NET6_0_OR_GREATER
                 path.AppendJoin('/', PathStack.Stack);
 #else
                 path.Append(string.Join("/", PathStack.Stack));
