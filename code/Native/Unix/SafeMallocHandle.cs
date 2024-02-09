@@ -1,8 +1,10 @@
 namespace RJCP.IO.Native.Unix
 {
     using System;
-    using System.Runtime.ConstrainedExecution;
     using System.Runtime.InteropServices;
+#if NETFRAMEWORK
+    using System.Runtime.ConstrainedExecution;
+#endif
 
     internal static partial class GLibc6
     {
@@ -20,8 +22,10 @@ namespace RJCP.IO.Native.Unix
                 get { return (handle.Equals(IntPtr.Zero)); }
             }
 
+#if NETFRAMEWORK
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-            override protected bool ReleaseHandle()
+#endif
+            protected override bool ReleaseHandle()
             {
                 // Here, we must obey all rules for constrained execution regions.
                 if (!handle.Equals(IntPtr.Zero))
