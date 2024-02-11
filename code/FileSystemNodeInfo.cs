@@ -25,6 +25,7 @@
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
         /// <exception cref="FileNotFoundException"><paramref name="path"/> is not found.</exception>
+        /// <exception cref="PlatformNotSupportedException">Only Windows and Linux are supported.</exception>
         /// <remarks>
         /// This constructor will automatically resolve link targets if available. The <see cref="LinkTarget"/> is
         /// the name of the file after resolution.
@@ -42,6 +43,7 @@
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
         /// <exception cref="FileNotFoundException"><paramref name="path"/> is not found.</exception>
+        /// <exception cref="PlatformNotSupportedException">Only Windows and Linux are supported.</exception>
         /// <remarks>
         /// The <see cref="LinkTarget"/> is the name of the final file if <paramref name="resolveLink"/> is <see langword="true"/>,
         /// else it is the link pointed to this path if it's a symbolic link (which may be another symbolic link).
@@ -55,6 +57,7 @@
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
         /// <exception cref="FileNotFoundException"><paramref name="path"/> is not found.</exception>
+        /// <exception cref="PlatformNotSupportedException">Only Windows and Linux are supported.</exception>
         /// <remarks>
         /// This constructor will automatically resolve link targets if available. The <see cref="LinkTarget"/> is
         /// the name of the file after resolution.
@@ -72,6 +75,7 @@
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
         /// <exception cref="FileNotFoundException"><paramref name="path"/> is not found.</exception>
+        /// <exception cref="PlatformNotSupportedException">Only Windows and Linux are supported.</exception>
         /// <remarks>
         /// The <see cref="LinkTarget"/> is the name of the final file if <paramref name="resolveLink"/> is <see langword="true"/>,
         /// else it is the link pointed to this path if it's a symbolic link (which may be another symbolic link).
@@ -86,8 +90,10 @@
 
             if (Platform.IsWinNT()) {
                 m_NodeInfo = new Win32NodeInfo(path, resolveLink);
-            } else {
+            } else if (Platform.IsUnix()) {
                 m_NodeInfo = new MonoUnixNodeInfo(path, resolveLink);
+            } else {
+                throw new PlatformNotSupportedException();
             }
 
             if (m_NodeInfo.Type != NodeInfoType.None) {

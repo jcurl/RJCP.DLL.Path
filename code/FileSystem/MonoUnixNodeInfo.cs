@@ -3,6 +3,7 @@
     using System;
     using System.IO;
     using System.Runtime.InteropServices;
+    using System.Runtime.Versioning;
     using Mono.Unix;
     using Native.Unix;
 
@@ -13,6 +14,7 @@
     /// This class depends on glibc v6 to work (the <c>readlink</c> function). If we ever support .NET 6.0 or later, we
     /// can use methods provided there.
     /// </remarks>
+    [SupportedOSPlatform("linux")]
     internal sealed class MonoUnixNodeInfo : NodeInfo<MonoUnixNodeInfo, MonoUnixExtended>
     {
         private readonly int m_HashCode;

@@ -3,12 +3,14 @@ namespace RJCP.IO.Native.Unix
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
+    using System.Runtime.Versioning;
     using System.Security;
 #if NETFRAMEWORK
     using System.Runtime.ConstrainedExecution;
 #endif
 
     [SuppressUnmanagedCodeSecurity]
+    [SupportedOSPlatform("linux")]
     [SuppressMessage("Globalization", "CA2101:Specify marshaling for P/Invoke string arguments", Justification = "UTF-8 should be used, not wide strings")]
     internal static partial class GLibc6
     {

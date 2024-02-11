@@ -5,6 +5,7 @@
     using System.Diagnostics;
     using System.IO;
     using System.Runtime.InteropServices;
+    using System.Runtime.Versioning;
     using System.Text;
     using Microsoft.Win32.SafeHandles;
     using Native.Win32;
@@ -13,6 +14,7 @@
     /// <summary>
     /// Get file information for Windows Operating Systems.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     internal sealed class Win32NodeInfo : NodeInfo<Win32NodeInfo, Win32Extended>
     {
         private readonly int m_HashCode;

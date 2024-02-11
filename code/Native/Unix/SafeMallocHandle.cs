@@ -2,10 +2,12 @@ namespace RJCP.IO.Native.Unix
 {
     using System;
     using System.Runtime.InteropServices;
+    using System.Runtime.Versioning;
 #if NETFRAMEWORK
     using System.Runtime.ConstrainedExecution;
 #endif
 
+    [SupportedOSPlatform("linux")]
     internal static partial class GLibc6
     {
         public class SafeMallocHandle : SafeHandle

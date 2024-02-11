@@ -41,7 +41,8 @@ namespace RJCP.IO
         public static Path ToPath(string path)
         {
             if (Platform.IsWinNT()) return new WindowsPath(path);
-            return new UnixPath(path);
+            if (Platform.IsUnix()) return new UnixPath(path);
+            throw new PlatformNotSupportedException();
         }
 
         /// <summary>
