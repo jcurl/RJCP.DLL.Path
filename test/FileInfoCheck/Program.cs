@@ -42,7 +42,7 @@ namespace RJCP.FileInfoCheck
 
         static bool Execute(string fileName)
         {
-            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            ThrowHelper.ThrowIfNull(fileName);
             IO.Path baseDir = IO.Path.ToPath(fileName);
             if (!baseDir.IsPinned) baseDir = IO.Path.ToPath(Environment.CurrentDirectory).Append(baseDir);
 
@@ -189,8 +189,8 @@ namespace RJCP.FileInfoCheck
 
         static void PrintResult(string message, string result, ConsoleColor color)
         {
-            if (message == null) throw new ArgumentNullException(nameof(message));
-            if (result == null) throw new ArgumentNullException(nameof(result));
+            ThrowHelper.ThrowIfNull(message);
+            ThrowHelper.ThrowIfNull(result);
             ConsoleColor oldColor = Console.ForegroundColor;
             Console.Write($"{message} ");
             Console.ForegroundColor = color;

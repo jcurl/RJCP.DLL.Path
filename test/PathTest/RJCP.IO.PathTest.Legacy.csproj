@@ -59,6 +59,7 @@
       <SetTargetFramework>TargetFramework=net40</SetTargetFramework>
     </ProjectReference>
     <ProjectReference Include="..\..\..\nunitextensions\CodeQuality\RJCP.CodeQuality.csproj" />
+    <ProjectReference Include="..\..\..\environment\SysCompat\RJCP.Core.SysCompat.csproj" />
     <ProjectReference Include="..\..\..\environment\Environment\RJCP.Environment.csproj" />
   </ItemGroup>
 

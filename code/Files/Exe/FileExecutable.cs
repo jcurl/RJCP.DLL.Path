@@ -57,7 +57,7 @@
         /// </remarks>
         public static FileExecutable GetFile(string path)
         {
-            if (path == null) throw new ArgumentNullException(nameof(path));
+            ThrowHelper.ThrowIfNull(path);
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Invalid path", nameof(path));
 
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))

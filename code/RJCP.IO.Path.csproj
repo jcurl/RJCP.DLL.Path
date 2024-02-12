@@ -48,7 +48,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <PackageReference Include="Mono.Posix" Version="4.0.0.0" PrivateAssets="all" ExcludeAssets="runtime" />
-    <ProjectReference Include="..\..\environment\SysCompat\RJCP.Core.SysCompat.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp'">
@@ -57,6 +56,7 @@
 
   <ItemGroup>
     <PackageReference Include="RJCP.MSBuildTasks" Version="0.2.4" PrivateAssets="all" />
+    <ProjectReference Include="..\..\environment\SysCompat\RJCP.Core.SysCompat.csproj" />
     <ProjectReference Include="..\..\environment\Environment\RJCP.Environment.csproj" />
     <ProjectReference Include="..\..\datastructures\Datastructures\RJCP.Core.Datastructures.csproj" />
   </ItemGroup>

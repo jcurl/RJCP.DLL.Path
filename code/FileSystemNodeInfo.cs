@@ -82,7 +82,7 @@
         /// </remarks>
         public FileSystemNodeInfo(string path, bool resolveLink)
         {
-            if (path == null) throw new ArgumentNullException(nameof(path));
+            ThrowHelper.ThrowIfNull(path);
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Empty path", nameof(path));
 
             if (!File.Exists(path) && !Directory.Exists(path))

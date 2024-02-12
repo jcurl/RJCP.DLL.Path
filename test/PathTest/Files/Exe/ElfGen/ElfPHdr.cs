@@ -9,7 +9,7 @@
 
         internal ElfPHdr(ElfHdr hdr)
         {
-            if (hdr == null) throw new ArgumentNullException(nameof(hdr));
+            ThrowHelper.ThrowIfNull(hdr);
             m_Hdr = hdr;
             Reset();
         }
