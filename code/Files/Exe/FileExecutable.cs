@@ -57,8 +57,7 @@
         /// </remarks>
         public static FileExecutable GetFile(string path)
         {
-            ThrowHelper.ThrowIfNull(path);
-            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Invalid path", nameof(path));
+            ThrowHelper.ThrowIfNullOrWhiteSpace(path);
 
             using (FileStream fs = new(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (BinaryReader br = new(fs)) {
