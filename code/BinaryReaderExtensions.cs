@@ -32,7 +32,7 @@
         {
             // Note, this code won't work on a machine where the file endianness differs from the host endianness.
             byte* buffer = stackalloc byte[Marshal.SizeOf<T>()];
-            Span<byte> sBuff = new Span<byte>(buffer, Marshal.SizeOf<T>());
+            Span<byte> sBuff = new(buffer, Marshal.SizeOf<T>());
 
             bool readComplete = false;
             int readTotal = 0;

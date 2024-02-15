@@ -23,18 +23,18 @@
         {
             UnixFileSystemInfo info;
             info = UnixFileSystemInfo.GetFileSystemEntry(path);
-            if (info == null || !info.Exists)
+            if (info is null || !info.Exists)
                 throw new FileNotFoundException($"File {path} not found", path);
             Path = info.FullName;
 
             if (info.IsSymbolicLink) {
                 LinkTarget = GetLinkTarget(path);
                 if (resolveLinks) {
-                    if (LinkTarget == null)
+                    if (LinkTarget is null)
                         throw new FileNotFoundException($"Link {path} can't be resolved", path);
 
                     info = UnixFileSystemInfo.GetFileSystemEntry(LinkTarget);
-                    if (info == null || !info.Exists || !TargetCanBeResolved(LinkTarget))
+                    if (info is null || !info.Exists || !TargetCanBeResolved(LinkTarget))
                         throw new FileNotFoundException($"Resolved File {LinkTarget} not found", LinkTarget);
                 }
             }
@@ -76,7 +76,7 @@
             unsafe {
                 byte* buffer = stackalloc byte[32768];
                 int len = GLibc6.readlink(path, buffer, 32768);
-                if (len <= 0 || len >= 32768)
+                if (len is <= 0 or >= 32768)
                     return null;
 
                 link = Marshal.PtrToStringAnsi((IntPtr)buffer, len);

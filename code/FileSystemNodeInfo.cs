@@ -151,9 +151,9 @@
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (obj == null) return false;
+            if (obj is null) return false;
 
-            if (!(obj is FileSystemNodeInfo fileInfo)) return false;
+            if (obj is not FileSystemNodeInfo fileInfo) return false;
             return Equals(fileInfo);
         }
 
@@ -167,7 +167,7 @@
         /// </returns>
         public bool Equals(FileSystemNodeInfo other)
         {
-            if (other == null) return false;
+            if (other is null) return false;
 
             // The NodeInfoType.None should never be set.
             CheckType();
@@ -203,7 +203,7 @@
         /// <returns>The result of the operator, if the two objects are equal.</returns>
         public static bool operator ==(FileSystemNodeInfo info1, FileSystemNodeInfo info2)
         {
-            if (((object)info1) == null || ((object)info2) == null)
+            if (((object)info1) is null || ((object)info2) is null)
                 return object.Equals(info1, info2);
 
             return info1.Equals(info2);
@@ -217,7 +217,7 @@
         /// <returns>The result of the operator, if the two objects are not equal.</returns>
         public static bool operator !=(FileSystemNodeInfo info1, FileSystemNodeInfo info2)
         {
-            if (((object)info1) == null || ((object)info2) == null)
+            if (((object)info1) is null || ((object)info2) is null)
                 return !Equals(info1, info2);
 
             return !info1.Equals(info2);

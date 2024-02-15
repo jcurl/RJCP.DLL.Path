@@ -60,10 +60,10 @@
             ThrowHelper.ThrowIfNull(path);
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Invalid path", nameof(path));
 
-            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (BinaryReader br = new BinaryReader(fs)) {
+            using (FileStream fs = new(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (BinaryReader br = new(fs)) {
                 FileExecutable exe = WindowsExecutable.GetFile(br);
-                if (exe != null) return exe;
+                if (exe is not null) return exe;
 
                 fs.Position = 0;
                 return UnixElfExecutable.GetFile(br);

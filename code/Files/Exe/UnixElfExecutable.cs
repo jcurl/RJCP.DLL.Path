@@ -18,7 +18,7 @@ namespace RJCP.IO.Files.Exe
         {
             try {
                 byte[] elfHdr = br.ReadBytes(ElfHeader.EI_NIDENT);
-                if (elfHdr == null) return null;
+                if (elfHdr is null) return null;
                 if (elfHdr.Length != ElfHeader.EI_NIDENT) return null;
 
                 if (elfHdr[ElfHeader.EI_MAG0] != ElfHeader.EI_MAG0_VALUE) return null;
@@ -27,12 +27,12 @@ namespace RJCP.IO.Files.Exe
                 if (elfHdr[ElfHeader.EI_MAG3] != ElfHeader.EI_MAG3_VALUE) return null;
                 if (elfHdr[ElfHeader.EI_VERSION] != ElfHeader.EV_CURRENT) return null;
 
-                if (elfHdr[ElfHeader.EI_CLASS] != ElfHeader.ELFCLASS32 &&
-                    elfHdr[ElfHeader.EI_CLASS] != ElfHeader.ELFCLASS64) return null;
-                if (elfHdr[ElfHeader.EI_DATA] != ElfHeader.ELFDATA2LSB &&
-                    elfHdr[ElfHeader.EI_DATA] != ElfHeader.ELFDATA2MSB) return null;
+                if (elfHdr[ElfHeader.EI_CLASS] is not ElfHeader.ELFCLASS32 and
+                    not ElfHeader.ELFCLASS64) return null;
+                if (elfHdr[ElfHeader.EI_DATA] is not ElfHeader.ELFDATA2LSB and
+                    not ElfHeader.ELFDATA2MSB) return null;
 
-                UnixElfExecutable exe = new UnixElfExecutable() {
+                UnixElfExecutable exe = new() {
                     m_ArchitectureSize = elfHdr[ElfHeader.EI_CLASS] == ElfHeader.ELFCLASS32 ? 32 : 64,
                     m_IsLittleEndian = elfHdr[ElfHeader.EI_DATA] == ElfHeader.ELFDATA2LSB,
                     m_TargetOs = GetFileTargetOs(elfHdr[ElfHeader.EI_OSABI])
@@ -267,14 +267,14 @@ namespace RJCP.IO.Files.Exe
         private static bool HasSymTab(BinaryReader br, ref ElfHeader.elf32_hdr hdr)
         {
             byte[] strTable = GetStringTable(br, ref hdr);
-            if (strTable == null) return false;
+            if (strTable is null) return false;
 
             for (int i = 0; i < hdr.e_shnum; i++) {
                 if (!GetSectionHeader(br, ref hdr, i).TryGet(out var shdr)) return false;
                 if (shdr.sh_type == ElfHeader.SHT_SYMTAB) {
                     if (shdr.sh_name == 0) return false;
                     string symtabName = GetString(strTable, shdr.sh_name);
-                    if (symtabName == null) return false;
+                    if (symtabName is null) return false;
                     if (symtabName.Equals(".symtab", StringComparison.InvariantCultureIgnoreCase)) return true;
                 }
             }
@@ -284,14 +284,14 @@ namespace RJCP.IO.Files.Exe
         private static bool HasSymTab(BinaryReader br, ref ElfHeader.elf64_hdr hdr)
         {
             byte[] strTable = GetStringTable(br, ref hdr);
-            if (strTable == null) return false;
+            if (strTable is null) return false;
 
             for (int i = 0; i < hdr.e_shnum; i++) {
                 if (!GetSectionHeader(br, ref hdr, i).TryGet(out var shdr)) return false;
                 if (shdr.sh_type == ElfHeader.SHT_SYMTAB) {
                     if (shdr.sh_name == 0) return false;
                     string symtabName = GetString(strTable, shdr.sh_name);
-                    if (symtabName == null) return false;
+                    if (symtabName is null) return false;
                     if (symtabName.Equals(".symtab", StringComparison.InvariantCultureIgnoreCase)) return true;
                 }
             }
@@ -338,7 +338,7 @@ namespace RJCP.IO.Files.Exe
 
             Console.WriteLine($"ELF Section Headers: {hdr.e_shnum}");
             byte[] strTable = GetStringTable(br, ref hdr);
-            if (strTable == null) return;
+            if (strTable is null) return;
 
             Console.WriteLine($"Section: {hdr.e_shnum}");
             for (int i = 0; i < hdr.e_shnum; i++) {
@@ -386,7 +386,7 @@ namespace RJCP.IO.Files.Exe
             }
 
             byte[] strTable = GetStringTable(br, ref hdr);
-            if (strTable == null) return;
+            if (strTable is null) return;
 
             Console.WriteLine($"ELF Section Headers: {hdr.e_shnum}");
             for (int i = 0; i < hdr.e_shnum; i++) {
@@ -416,7 +416,7 @@ namespace RJCP.IO.Files.Exe
         /// <returns><see langword="true"/> if this is likely an executable, <see langword="false"/> otherwise.</returns>
         private static bool GetIsExe(BinaryReader br, ref ElfHeader.elf32_hdr hdr)
         {
-            if (hdr.e_type != ElfHeader.ET_DYN && hdr.e_type != ElfHeader.ET_EXEC) return false;
+            if (hdr.e_type is not ElfHeader.ET_DYN and not ElfHeader.ET_EXEC) return false;
 
             bool pt_interp = false;
             bool dt_soname = false;
@@ -469,7 +469,7 @@ namespace RJCP.IO.Files.Exe
         /// <returns><see langword="true"/> if this is likely an executable, <see langword="false"/> otherwise.</returns>
         private static bool GetIsExe(BinaryReader br, ref ElfHeader.elf64_hdr hdr)
         {
-            if (hdr.e_type != ElfHeader.ET_DYN && hdr.e_type != ElfHeader.ET_EXEC) return false;
+            if (hdr.e_type is not ElfHeader.ET_DYN and not ElfHeader.ET_EXEC) return false;
 
             bool pt_interp = false;
             bool dt_soname = false;

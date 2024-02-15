@@ -70,8 +70,8 @@ namespace RJCP.FileInfo
                     Console.WriteLine($"Couldn't resolve dir: {arg} ({ex.Message})");
                 }
 
-                if (resolved != null) {
-                    if (first == null) {
+                if (resolved is not null) {
+                    if (first is null) {
                         first = resolved;
                     } else {
                         if (first != resolved) identical = false;
@@ -87,7 +87,7 @@ namespace RJCP.FileInfo
                 } catch (ArgumentException) { /* Pass through */
                 }
 
-                if (fileExecutable != null) {
+                if (fileExecutable is not null) {
                     Console.WriteLine($" Executable Machine Type: {fileExecutable.MachineType}");
                     Console.WriteLine($" Executable Target OS:    {fileExecutable.TargetOs}");
                     Console.WriteLine($" Executable Architecture: {fileExecutable.ArchitectureSize}");

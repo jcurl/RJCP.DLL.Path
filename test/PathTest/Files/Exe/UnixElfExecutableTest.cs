@@ -30,7 +30,7 @@
 
         private List<SparseBlock> GetExeDynElfBlocks(int machine, byte osabi, int etype, bool ptinterp, bool symtab, bool soname, bool pie)
         {
-            if (etype != 2 && etype != 3)
+            if (etype is not 2 and not 3)
                 throw new ArgumentOutOfRangeException(nameof(etype), "Unknown e_type");
 
             // General layout for testing
@@ -40,8 +40,8 @@
             // 0600 - 07FF - Dynamic section
             // 0800 - 0FFF - Section Table
 
-            List<SparseBlock> file = new List<SparseBlock>();
-            ElfHdr elfGen = new ElfHdr() {
+            List<SparseBlock> file = new();
+            ElfHdr elfGen = new() {
                 PrgHdrOffset = 0x80, SectHdrOffset = 0x800, SectHdrStringIndex = 1,
                 MachineArch = (ushort)machine, Abi = osabi, ObjectType = (ushort)etype,
                 IsLittleEndian = m_IsLittleEndian, WordSize = m_Is32Bit ? 32 : 64
@@ -95,7 +95,7 @@
             elfGen.PrgHdrRecords = phdridx;
 
             // The String Section content
-            StringSection strings = new StringSection();
+            StringSection strings = new();
             strings.Strings.Add(string.Empty);
             strings.Strings.Add(".symtab");
             strings.Strings.Add(".shstrtab");
@@ -133,10 +133,10 @@
 
         private List<SparseBlock> GetInvalidElfPtInterpMulti(int machine, byte osabi, int etype, bool dll)
         {
-            if (etype != 2 && etype != 3)
+            if (etype is not 2 and not 3)
                 throw new ArgumentOutOfRangeException(nameof(etype), "Unknown e_type");
 
-            List<SparseBlock> file = new List<SparseBlock>();
+            List<SparseBlock> file = new();
             //StringSection strings = new StringSection();
             //strings.Strings.Add(string.Empty);
             //if (dll) strings.Strings.Add(".symtab");
@@ -150,7 +150,7 @@
             // 0600 - 07FF - Dynamic section
             // 0800 - 0FFF - Section Table
 
-            ElfHdr elfGen = new ElfHdr() {
+            ElfHdr elfGen = new() {
                 PrgHdrOffset = 0x80, SectHdrOffset = 0x800, SectHdrStringIndex = 0,
                 MachineArch = (ushort)machine, Abi = osabi, ObjectType = (ushort)etype,
                 IsLittleEndian = m_IsLittleEndian, WordSize = m_Is32Bit ? 32 : 64
@@ -221,8 +221,8 @@
 
         private List<SparseBlock> GetCoreElfBlocks(int machine, byte osabi)
         {
-            List<SparseBlock> file = new List<SparseBlock>();
-            ElfHdr elfGen = new ElfHdr() {
+            List<SparseBlock> file = new();
+            ElfHdr elfGen = new() {
                 PrgHdrOffset = 0x80,
                 MachineArch = (ushort)machine, Abi = osabi, ObjectType = 4,
                 IsLittleEndian = m_IsLittleEndian, WordSize = m_Is32Bit ? 32 : 64
@@ -265,7 +265,7 @@
             [Values(false, true)] bool pie)
         {
             using (Stream stream = GetElf(3, 0, 2, ptinterp, symtab, soname, pie))   // i386, SysV, ET_EXEC, ptinterp, symtab, soname, pie
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf, Is.Not.Null);
                 Assert.That(elf.MachineType, Is.EqualTo(FileMachineType.Intel386));
@@ -289,7 +289,7 @@
         {
             // The symtab should only be used when no P_INTERP and no SONAME. Because many exe's have a SymTab.
             using (Stream stream = GetElf(3, 0, 3, true, symtab, false, pie))   // i386, SysV, ET_DYN, PT_INTERP, symtab, no SONAME, pie
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf, Is.Not.Null);
                 Assert.That(elf.MachineType, Is.EqualTo(FileMachineType.Intel386));
@@ -311,7 +311,7 @@
         {
             // The symtab should only be used when no P_INTERP and no SONAME. Because many exe's have a SymTab.
             using (Stream stream = GetElf(3, 0, 3, false, symtab, soname, true))   // i386, SysV, ET_DYN, no PT_INTERP, symtab, SONAME, pie
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf, Is.Not.Null);
                 Assert.That(elf.MachineType, Is.EqualTo(FileMachineType.Intel386));
@@ -333,7 +333,7 @@
         {
             // The symtab should only be used when no P_INTERP and no SONAME. Because many exe's have a SymTab.
             using (Stream stream = GetElf(3, 0, 3, false, symtab, soname, false))   // i386, SysV, ET_DYN, no PT_INTERP, symtab, SONAME, no pie
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf, Is.Not.Null);
                 Assert.That(elf.MachineType, Is.EqualTo(FileMachineType.Intel386));
@@ -419,7 +419,7 @@
         public void ElfExeMachine(int machine, FileMachineType machineType)
         {
             using (Stream stream = GetElf(machine, 0, 2, true, true, false, false))   // machine, SysV, ET_EXEC, PT_INTERP, SymTab, no SONAME, no pie
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf, Is.Not.Null);
                 Assert.That(elf.MachineType, Is.EqualTo(machineType));
@@ -456,7 +456,7 @@
         public void ElfExeAbi(byte abi, FileTargetOs targetOs)
         {
             using (Stream stream = GetElf(3, abi, 2, true, true, false, false))   // i386, abi, ET_EXEC, PT_INTERP, SymTab, no SONAME, no pie
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf, Is.Not.Null);
                 Assert.That(elf.MachineType, Is.EqualTo(FileMachineType.Intel386));
@@ -477,7 +477,7 @@
         public void InvalidElfHeader(byte mag0, byte mag1, byte mag2, byte mag3)
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 stream.DirectWrite(0, new byte[] { mag0, mag1, mag2, mag3 });
 
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
@@ -489,7 +489,7 @@
         public void InvalidElfVersionHead([Values(0, 2, 0xFF)] byte version)
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 stream.DirectWrite(6, new byte[] { version });
 
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
@@ -501,7 +501,7 @@
         public void InvalidElfClass([Values(0, 3, 255)] byte elfClass)
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 stream.DirectWrite(4, new byte[] { elfClass });
 
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
@@ -513,7 +513,7 @@
         public void InvalidElfData([Values(0, 3, 255)] byte elfData)
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 stream.DirectWrite(5, new byte[] { elfData });
 
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
@@ -524,8 +524,8 @@
         [Test]
         public void ShortElfFileEmpty()
         {
-            using (SparseStream stream = new SparseStream())
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (SparseStream stream = new())
+            using (BinaryReader br = new(stream)) {
                 stream.SetLength(10);
 
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
@@ -537,7 +537,7 @@
         public void ShortElfFile10()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 stream.SetLength(10);
 
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
@@ -549,7 +549,7 @@
         public void ElfHdrVersionLongInvalid()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 stream.DirectWrite(0x14, new byte[] { 0x55, 0x55, 0x55, 0x55 });
 
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
@@ -561,7 +561,7 @@
         public void ElfHdrProgramHeadersCountZero()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     stream.DirectWrite(0x2c, new byte[] { 0x00, 0x00 });
@@ -580,7 +580,7 @@
         public void ElfHdrProgramHeadersInvalid()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     stream.DirectWrite(0x1c, new byte[] { 0x55, 0x55, 0x55, 0x55 });
@@ -602,7 +602,7 @@
         public void ElfExeHdrSectionHeadersCountZero()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     stream.DirectWrite(0x30, new byte[] { 0x00, 0x00 });
@@ -626,7 +626,7 @@
         public void ElfDllHdrSectionHeadersCountZero()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     stream.DirectWrite(0x30, new byte[] { 0x00, 0x00 });
@@ -651,7 +651,7 @@
         public void ElfHdrPrgHdrEntSizeTooSmall()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // 32-bit should be 0x20.
@@ -679,7 +679,7 @@
         public void ElfHdrPrgHdrOffsetTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     stream.DirectWrite(0x1C, m_IsLittleEndian ?
@@ -705,7 +705,7 @@
         public void ElfHdrPrgHdrBlockTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // e_phnum = 2. e_phentsize = 0x20. Set e_phoff = 0x1000 - 0x40 + 1 = 0xFC1
@@ -733,7 +733,7 @@
         public void ElfHdrSectHdrEntSizeTooSmall()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // 32-bit should be 0x28.
@@ -761,7 +761,7 @@
         public void ElfHdrSectHdrOffsetTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     stream.DirectWrite(0x20, m_IsLittleEndian ?
@@ -787,7 +787,7 @@
         public void ElfHdrSectHdrBlockTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // e_shnum = 3. e_shentsize = 0x28. Set e_shoff = 0x1000 - 0x78 + 1 = 0xF89
@@ -815,7 +815,7 @@
         public void ElfHdrSectHdrStringIndexTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 2, true, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // e_shnum = 3
@@ -843,7 +843,7 @@
         public void ElfHdrPtDynamicSoNameOffsetTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, false, true, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
@@ -851,7 +851,7 @@
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, false, true, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // e_phnum = 2 (PT_PHDR, PT_DYNAMIC). PT_DYNAMIC = e_phoff + 32. p_offset = 4.
@@ -886,7 +886,7 @@
         public void ElfHdrPtDynamicSoNameOffsetSizeTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, false, true, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
@@ -894,7 +894,7 @@
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, false, true, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // e_phnum = 2 (PT_PHDR, PT_DYNAMIC). PT_DYNAMIC = e_phoff + 32. p_offset = 0x10.
@@ -929,7 +929,7 @@
         public void ElfHdrPtDynamicSoNameSizeZero()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, false, true, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // e_phnum = 2 (PT_PHDR, PT_DYNAMIC). PT_DYNAMIC = e_phoff + 32. p_offset = 0x10.
@@ -959,7 +959,7 @@
         public void ElfStringTableOffsetTooLarge1()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
@@ -967,7 +967,7 @@
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // String Table = e_shoff + e_shstrndx * e_shentsize + 0x10
@@ -1004,7 +1004,7 @@
         public void ElfStringTableOffsetTooLarge2()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
@@ -1012,7 +1012,7 @@
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // String Table = e_shoff + e_shstrndx * e_shentsize + 0x10
@@ -1045,14 +1045,14 @@
         public void ElfStringTableSizeTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // String Table = e_shoff + e_shstrndx * e_shentsize + 0x14
@@ -1094,8 +1094,8 @@
             int strlength = file[1].Data.Length;
             file.RemoveAt(1);
 
-            using (SparseStream stream = new SparseStream(file))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (SparseStream stream = new(file))
+            using (BinaryReader br = new(stream)) {
                 // Section header 1 (offset 0x800 + e_shentsize) must be patched for the offset of 0x1000.
 
                 switch (m_Is32Bit) {
@@ -1152,14 +1152,14 @@
         public void ElfStringSymTabNameOffsetTooLarge()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // SymTab section Name = e_shoff + e_shstrndx * e_shentsize + 0x00
@@ -1196,14 +1196,14 @@
         public void ElfStringSymTabNameOffsetZero()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // SymTab section Name = e_shoff + e_shstrndx * e_shentsize + 0x00
@@ -1236,14 +1236,14 @@
         public void ElfStringSymTabCheckType()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // SymTab section Name = e_shoff + e_shstrndx * e_shentsize + 0x04
@@ -1277,8 +1277,8 @@
         public void ElfExePtInterpTwice([Values(2, 3)] byte e_type)
         {
             IList<SparseBlock> file = GetInvalidElfPtInterpMulti(3, 0, e_type, false);
-            using (SparseStream stream = new SparseStream(file))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (SparseStream stream = new(file))
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
 
                 // PT_INTERP twice means it's not an elf. But it shouldn't affect a DLL.
@@ -1292,8 +1292,8 @@
         public void ElfDllPtInterpTwice()
         {
             IList<SparseBlock> file = GetInvalidElfPtInterpMulti(3, 0, 3, true);
-            using (SparseStream stream = new SparseStream(file))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (SparseStream stream = new(file))
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
 
                 // PT_INTERP twice means it's not an elf. But it shouldn't affect a DLL.
@@ -1307,14 +1307,14 @@
         public void ElfDynExeNoPie()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, true))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.False);
                 Assert.That(elf.IsExe, Is.True);
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, true, false, true))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // Dynamic Section offset to 0x6ffffffb.
@@ -1339,14 +1339,14 @@
         public void ElfDllSoNameLengthZero()
         {
             using (SparseStream stream = GetElf(3, 0, 3, false, false, true, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
                 Assert.That(elf.IsDll, Is.True);
                 Assert.That(elf.IsExe, Is.False);
             }
 
             using (SparseStream stream = GetElf(3, 0, 3, false, false, true, false))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (BinaryReader br = new(stream)) {
                 switch (m_Is32Bit) {
                 case true:
                     // Dynamic Section offset to 0x6ffffffb.
@@ -1371,8 +1371,8 @@
         public void ElfCoreFile()
         {
             IList<SparseBlock> file = GetCoreElfBlocks(3, 0);
-            using (SparseStream stream = new SparseStream(file))
-            using (BinaryReader br = new BinaryReader(stream)) {
+            using (SparseStream stream = new(file))
+            using (BinaryReader br = new(stream)) {
                 UnixElfExecutable elf = UnixElfExecutableAccessor.GetFile(br);
 
                 // We're ET_DYN, have no symtab, and no DT_1_PIE isn't present, no SONAME

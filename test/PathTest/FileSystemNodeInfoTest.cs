@@ -33,7 +33,7 @@
                 using (Stream fs = new FileStream("test.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
                     /* Do nothing, the file is empty */
                 }
-                FileSystemNodeInfo info = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "test.txt"));
+                FileSystemNodeInfo info = new(System.IO.Path.Combine(scratch.Path, "test.txt"));
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("test.txt"));
 
                 if (Platform.IsWinNT()) {
@@ -51,7 +51,7 @@
                     /* Do nothing, the file is empty */
                 }
                 Path path = Path.ToPath(scratch.Path).Append("test.txt");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(path);
+                FileSystemNodeInfo info = new(path);
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("test.txt"));
 
                 if (Platform.IsWinNT()) {
@@ -68,7 +68,7 @@
                 using (Stream fs = new FileStream("test.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
                     /* Do nothing, the file is empty */
                 }
-                FileSystemNodeInfo info = new FileSystemNodeInfo("test.txt");
+                FileSystemNodeInfo info = new("test.txt");
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("test.txt"));
 
                 if (Platform.IsWinNT()) {
@@ -86,7 +86,7 @@
                     /* Do nothing, the file is empty */
                 }
                 Path path = Path.ToPath("test.txt");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(path);
+                FileSystemNodeInfo info = new(path);
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("test.txt"));
 
                 if (Platform.IsWinNT()) {
@@ -104,13 +104,13 @@
                 using (Stream fs = new FileStream("test.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
                     /* Do nothing, the file is empty */
                 }
-                FileSystemNodeInfo info = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "test.txt"));
+                FileSystemNodeInfo info = new(System.IO.Path.Combine(scratch.Path, "test.txt"));
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("test.txt"));
 
                 using (Stream fs = new FileStream("test2.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
                     /* Do nothing, the file is empty */
                 }
-                FileSystemNodeInfo info2 = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "test2.txt"));
+                FileSystemNodeInfo info2 = new(System.IO.Path.Combine(scratch.Path, "test2.txt"));
                 Assert.That(System.IO.Path.GetFileName(info2.Path), Is.EqualTo("test2.txt"));
 
                 Assert.That(info.Equals(info2), Is.False);
@@ -120,7 +120,7 @@
                 Assert.That(info != info2, Is.True);
                 Assert.That(info2 != info, Is.True);
 
-                FileSystemNodeInfo info3 = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "test.txt"));
+                FileSystemNodeInfo info3 = new(System.IO.Path.Combine(scratch.Path, "test.txt"));
                 Assert.That(System.IO.Path.GetFileName(info3.Path), Is.EqualTo("test.txt"));
 
                 Assert.That(info3.Equals(info2), Is.False);
@@ -152,14 +152,14 @@
                     /* Do nothing, the file is empty */
                 }
                 Path path = Path.ToPath(scratch.Path).Append("test.txt");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(path);
+                FileSystemNodeInfo info = new(path);
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("test.txt"));
 
                 using (Stream fs = new FileStream("test2.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
                     /* Do nothing, the file is empty */
                 }
                 Path path2 = Path.ToPath(scratch.Path).Append("test2.txt");
-                FileSystemNodeInfo info2 = new FileSystemNodeInfo(path2);
+                FileSystemNodeInfo info2 = new(path2);
                 Assert.That(System.IO.Path.GetFileName(info2.Path), Is.EqualTo("test2.txt"));
 
                 Assert.That(info.Equals(info2), Is.False);
@@ -170,7 +170,7 @@
                 Assert.That(info2 != info, Is.True);
 
                 Path path3 = Path.ToPath(scratch.Path).Append("test.txt");
-                FileSystemNodeInfo info3 = new FileSystemNodeInfo(path3);
+                FileSystemNodeInfo info3 = new(path3);
                 Assert.That(System.IO.Path.GetFileName(info3.Path), Is.EqualTo("test.txt"));
 
                 Assert.That(info3.Equals(info2), Is.False);
@@ -198,7 +198,7 @@
         {
             using (ScratchPad scratch = Deploy.ScratchPad()) {
                 Directory.CreateDirectory("testdir");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "testdir"));
+                FileSystemNodeInfo info = new(System.IO.Path.Combine(scratch.Path, "testdir"));
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("testdir"));
 
                 if (Platform.IsWinNT()) {
@@ -214,7 +214,7 @@
             using (ScratchPad scratch = Deploy.ScratchPad()) {
                 Directory.CreateDirectory("testdir");
                 Path path = Path.ToPath(scratch.Path).Append("testdir");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(path);
+                FileSystemNodeInfo info = new(path);
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("testdir"));
 
                 if (Platform.IsWinNT()) {
@@ -229,7 +229,7 @@
         {
             using (ScratchPad scratch = Deploy.ScratchPad()) {
                 Directory.CreateDirectory("testdir");
-                FileSystemNodeInfo info = new FileSystemNodeInfo("testdir");
+                FileSystemNodeInfo info = new("testdir");
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("testdir"));
 
                 if (Platform.IsWinNT()) {
@@ -245,7 +245,7 @@
             using (ScratchPad scratch = Deploy.ScratchPad()) {
                 Directory.CreateDirectory("testdir");
                 Path path = Path.ToPath("testdir");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(path);
+                FileSystemNodeInfo info = new(path);
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("testdir"));
 
                 if (Platform.IsWinNT()) {
@@ -261,11 +261,11 @@
         {
             using (ScratchPad scratch = Deploy.ScratchPad()) {
                 Directory.CreateDirectory("testdir");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "testdir"));
+                FileSystemNodeInfo info = new(System.IO.Path.Combine(scratch.Path, "testdir"));
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("testdir"));
 
                 Directory.CreateDirectory("testdir2");
-                FileSystemNodeInfo info2 = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "testdir2"));
+                FileSystemNodeInfo info2 = new(System.IO.Path.Combine(scratch.Path, "testdir2"));
                 Assert.That(System.IO.Path.GetFileName(info2.Path), Is.EqualTo("testdir2"));
 
                 Assert.That(info.Equals(info2), Is.False);
@@ -275,7 +275,7 @@
                 Assert.That(info != info2, Is.True);
                 Assert.That(info2 != info, Is.True);
 
-                FileSystemNodeInfo info3 = new FileSystemNodeInfo(System.IO.Path.Combine(scratch.Path, "testdir"));
+                FileSystemNodeInfo info3 = new(System.IO.Path.Combine(scratch.Path, "testdir"));
                 Assert.That(System.IO.Path.GetFileName(info3.Path), Is.EqualTo("testdir"));
 
                 Assert.That(info3.Equals(info2), Is.False);
@@ -305,12 +305,12 @@
             using (ScratchPad scratch = Deploy.ScratchPad()) {
                 Directory.CreateDirectory("testdir");
                 Path path = Path.ToPath(scratch.Path).Append("testdir");
-                FileSystemNodeInfo info = new FileSystemNodeInfo(path);
+                FileSystemNodeInfo info = new(path);
                 Assert.That(System.IO.Path.GetFileName(info.Path), Is.EqualTo("testdir"));
 
                 Directory.CreateDirectory("testdir2");
                 Path path2 = Path.ToPath(scratch.Path).Append("testdir2");
-                FileSystemNodeInfo info2 = new FileSystemNodeInfo(path2);
+                FileSystemNodeInfo info2 = new(path2);
                 Assert.That(System.IO.Path.GetFileName(info2.Path), Is.EqualTo("testdir2"));
 
                 Assert.That(info.Equals(info2), Is.False);
@@ -321,7 +321,7 @@
                 Assert.That(info2 != info, Is.True);
 
                 Path path3 = Path.ToPath(scratch.Path).Append("testdir");
-                FileSystemNodeInfo info3 = new FileSystemNodeInfo(path3);
+                FileSystemNodeInfo info3 = new(path3);
                 Assert.That(System.IO.Path.GetFileName(info3.Path), Is.EqualTo("testdir"));
 
                 Assert.That(info3.Equals(info2), Is.False);

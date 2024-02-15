@@ -13,7 +13,7 @@
         /// <summary>
         /// Constant for invalid handle value.
         /// </summary>
-        public static readonly IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
+        public static readonly IntPtr INVALID_HANDLE_VALUE = new(-1);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true, EntryPoint = "CreateFileW")]
         public static extern SafeFileHandle CreateFile(string fileName, ACCESS_MASK access, FileShare share,

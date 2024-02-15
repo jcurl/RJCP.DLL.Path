@@ -32,7 +32,7 @@
                 if (fileHeader.SizeOfOptionalHeader == 0) return null;
                 if ((fileHeader.Characteristics & PEHeader.IMAGE_FILE_Characteristics.EXECUTABLE_IMAGE) == 0) return null;
 
-                WindowsExecutable winExe = new WindowsExecutable();
+                WindowsExecutable winExe = new();
 
                 // Some implementations use the bit-size in the File Characteristics for the PE32 or PE32+ decision.
                 // That is wrong, it must be based on the magic number.

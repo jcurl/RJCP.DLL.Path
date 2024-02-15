@@ -59,7 +59,7 @@
 
         private void ParsePath(string path)
         {
-            if (path == null) {
+            if (path is null) {
                 RootVolume = string.Empty;
                 PathStack.InitializeEmpty();
                 m_Path = string.Empty;
@@ -96,7 +96,7 @@
             int pathStart = CheckIsDos(trimmedPath);
             if (pathStart == 0) pathStart = CheckIsUnc(trimmedPath);
 
-            if (RootVolume == null) RootVolume = string.Empty;
+            RootVolume ??= string.Empty;
             if (pathStart == trimmedPath.Length) {
                 PathStack.InitializeEmpty();
                 return;
@@ -112,7 +112,7 @@
                 }
             }
 
-            List<string> stack = new List<string>();
+            List<string> stack = new();
             int ps = pathStart;
             for (int i = ps; i < trimmedPath.Length; i++) {
                 char c = trimmedPath[i];
@@ -142,9 +142,9 @@
             if (path[1] == ':') {
                 // Check for DOS X:
                 char d = path[0];
-                if (d >= 'a' && d <= 'z') {
+                if (d is >= 'a' and <= 'z') {
                     RootVolume = DriveLetter[d - 'a'];
-                } else if (d >= 'A' && d <= 'Z') {
+                } else if (d is >= 'A' and <= 'Z') {
                     RootVolume = DriveLetter[d - 'A'];
                 } else {
                     throw new ArgumentException("Invalid path", nameof(path));
@@ -203,7 +203,7 @@
 
         private static bool IsDirSepChar(char c)
         {
-            return c == '/' || c == '\\';
+            return c is '/' or '\\';
         }
 
         private void NormalizePath(List<string> stack)
@@ -308,7 +308,7 @@
         public override Path Append(Path path)
         {
             // Both must be a Windows path
-            if (!(path is WindowsPath winPath)) return this;
+            if (path is not WindowsPath winPath) return this;
 
             // Rule 1
             if (IsEmpty(winPath)) return this;
@@ -326,7 +326,7 @@
                 throw new ArgumentException("Can't append unpinned paths with different root volumes", nameof(path));
             }
 
-            WindowsPath newPath = new WindowsPath {
+            WindowsPath newPath = new() {
                 IsDos = IsDos || winPath.IsDos,
                 IsUnc = IsUnc || winPath.IsUnc,
                 IsPinned = IsPinned || winPath.IsPinned,
@@ -418,7 +418,7 @@
             int nodes = PathStack.Count;
             if (nodes > 0 && string.IsNullOrEmpty(PathStack[nodes - 1])) nodes--;
 
-            WindowsPath newPath = new WindowsPath {
+            WindowsPath newPath = new() {
                 IsDos = IsDos,
                 IsUnc = IsUnc,
                 IsPinned = IsPinned,
@@ -452,7 +452,7 @@
                     newPath.PathStack.InitializeEmpty();
                 }
             } else {
-                List<string> stack = new List<string>();
+                List<string> stack = new();
                 for (int i = 0; i < nodes; i++) {
                     stack.Add(PathStack[i]);
                 }
@@ -480,7 +480,7 @@
         public override Path GetRelative(Path basePath)
         {
             // Both must be a Windows path
-            if (!(basePath is WindowsPath winPath)) return this;
+            if (basePath is not WindowsPath winPath) return this;
             return GetRelative(winPath, false);
         }
 
@@ -548,14 +548,14 @@
 
             if (match == -1) match = pos;      // The length of the shortest stack
 
-            WindowsPath newPath = new WindowsPath {
+            WindowsPath newPath = new() {
                 IsDos = false,
                 IsUnc = false,
                 IsPinned = false,
                 RootVolume = string.Empty
             };
 
-            List<string> stack = new List<string>();
+            List<string> stack = new();
             newPath.m_Parents = rightLen - match;
             for (int i = 0; i < newPath.m_Parents; i++) {
                 stack.Add("..");
@@ -581,7 +581,7 @@
         {
             if (IsTrimmed()) return this;
 
-            WindowsPath newPath = new WindowsPath {
+            WindowsPath newPath = new() {
                 IsDos = IsDos,
                 IsUnc = IsUnc,
                 IsPinned = IsPinned,
@@ -626,7 +626,7 @@
             if (PathStack.Count == 0) {
                 m_Path = RootVolume;
             } else {
-                StringBuilder path = new StringBuilder();
+                StringBuilder path = new();
                 path.Append(RootVolume);
                 if (IsPinned) path.Append('\\');
 #if NET6_0_OR_GREATER

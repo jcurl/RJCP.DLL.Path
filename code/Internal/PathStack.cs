@@ -89,7 +89,7 @@
                 m_PathStack = EmptyStack;
                 Count = 0;
             } else {
-                List<string> newstack = new List<string>();
+                List<string> newstack = new();
                 for (int i = 0; i < stack.Count - 1; i++) {
                     newstack.Add(stack.m_PathStack[i]);
                 }

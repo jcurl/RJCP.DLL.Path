@@ -79,7 +79,7 @@
         [TestCase(@"\\鳥\目\山水.txt", @"\\鳥\目", @"\\鳥\目\山水.txt", WinPathFeature.IsUnc | WinPathFeature.IsPinned)]
         public void ParsePath(string path, string rootVolume, string expectedPath, WinPathFeature features)
         {
-            WindowsPath p = new WindowsPath(path);
+            WindowsPath p = new(path);
             Console.WriteLine($"{p}");
 
             Assert.Multiple(() => {
@@ -147,12 +147,12 @@
         [TestCase(@"\\server\share\\foo", @"\\server\share\foo")]
         public void NormalizedPath(string path, string expectedPath)
         {
-            if (expectedPath == null) {
+            if (expectedPath is null) {
                 Assert.That(() => {
                     _ = new WindowsPath(path);
                 }, Throws.TypeOf<ArgumentException>());
             } else {
-                WindowsPath p = new WindowsPath(path);
+                WindowsPath p = new(path);
                 Assert.That(p.ToString(), Is.EqualTo(expectedPath));
             }
         }
@@ -172,7 +172,7 @@
         [TestCase(@"\\server\share\foo\", @"\\server\share\foo")]
         public void TrimPath(string path, string expectedPath)
         {
-            WindowsPath p = new WindowsPath(path);
+            WindowsPath p = new(path);
             Assert.That(p.Trim().ToString(), Is.EqualTo(expectedPath));
         }
 
@@ -204,7 +204,7 @@
         [TestCase(@"..\..", @"..\..\..")]
         public void GetParent(string path, string expectedNewPath)
         {
-            WindowsPath p = new WindowsPath(path);
+            WindowsPath p = new(path);
             Assert.That(p.GetParent().ToString(), Is.EqualTo(expectedNewPath));
         }
 
@@ -291,8 +291,8 @@
         [TestCase(@"A\B\C", @"A\b\c", "", @"A\b\c")]
         public void GetRelative(string path, string basePath, string expected, string append = null)
         {
-            WindowsPath p = new WindowsPath(path);
-            WindowsPath b = new WindowsPath(basePath);
+            WindowsPath p = new(path);
+            WindowsPath b = new(basePath);
             Path r = p.GetRelative(b);
             Assert.That(r.ToString(), Is.EqualTo(expected));
 
@@ -300,7 +300,7 @@
             // - When the path is unpinned, the basePath is pinned, the path is returned. Appending the base path with
             //   the unpinned path cannot result in the original unpinned path.
             Path o = b.Append(r);
-            if (append == null) {
+            if (append is null) {
                 Assert.That(o.ToString(), Is.EqualTo(p.Trim().ToString()));
             } else {
                 Assert.That(o.ToString(), Is.EqualTo(append));
@@ -428,9 +428,9 @@
         [TestCase(@"\", "..", null)]
         public void Append(string path, string extend, string expected)
         {
-            WindowsPath p = new WindowsPath(path);
+            WindowsPath p = new(path);
 
-            if (expected != null) {
+            if (expected is not null) {
                 Assert.That(p.Append(extend).ToString(), Is.EqualTo(expected));
             } else {
                 Assert.That(() => {

@@ -7,7 +7,7 @@
     {
         private const string Assemblyname = "RJCP.IO.Path";
         private const string TypeName = "RJCP.IO.Files.Exe.UnixElfExecutable";
-        private static readonly PrivateType AccType = new PrivateType(Assemblyname, TypeName);
+        private static readonly PrivateType AccType = new(Assemblyname, TypeName);
 
         public static UnixElfExecutable GetFile(BinaryReader br)
         {

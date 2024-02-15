@@ -53,7 +53,7 @@
                     if ((fileInfoByHandle.FileAttributes & Kernel32.FileAttributeFlags.FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
                         LinkTarget = GetLinkTarget(path, file).Value;
                         if (resolveLinks) {
-                            if (LinkTarget == null)
+                            if (LinkTarget is null)
                                 throw new FileNotFoundException($"Link {path} can't be resolved", path);
 
                             file.Close();
@@ -103,7 +103,7 @@
             }
         }
 
-        private static readonly SafeFileHandle InvalidFile = new SafeFileHandle(IntPtr.Zero, false);
+        private static readonly SafeFileHandle InvalidFile = new(IntPtr.Zero, false);
 
         private static Result<SafeFileHandle> GetFileHandle(string path, bool resolveLinks)
         {
@@ -165,7 +165,7 @@
                             return Result.FromException<string>(new FileNotFoundException("Handle cannot be resolved"));
                         }
 
-                        string target = new string(buffer, 0, len);
+                        string target = new(buffer, 0, len);
                         if (target.StartsWith(@"\\?\UNC\")) {
 #if NET6_0_OR_GREATER
                             string uncPath = target[8..];
@@ -188,11 +188,11 @@
 
             // Finally, to get it working on Windows XP, we have to revert to querying the objects directly.
             string ntTargetFileName = NtQueryInformationFile(targetHandle);
-            if (ntTargetFileName == null)
+            if (ntTargetFileName is null)
                 return Result.FromException<string>(new FileNotFoundException("Handle NtQueryInformationFile failed"));
 
             string ntObjectName = NtQueryObjectNameInformation(targetHandle);
-            if (ntObjectName == null)
+            if (ntObjectName is null)
                 return Result.FromException<string>(new FileNotFoundException("Handle NtQueryObject for ObjectNameInformation failed"));
 
             // Calculate the device name
@@ -203,7 +203,7 @@
 
             // Try to map the device name to a DOS drive letter.
             string dosPath = QueryDosDeviceSubstitute(deviceName, ntTargetFileName);
-            if (dosPath != null) return dosPath;
+            if (dosPath is not null) return dosPath;
             return $"\\{ntTargetFileName}";
         }
 
@@ -238,7 +238,7 @@
                     ipObjName, nLength, out nLength);
                 if (ntstatus != 0) {
                     if (ntstatus != unchecked((int)0xc0000004)) return null;
-                    if (nLength <= 0 || nLength > 65536) return null;
+                    if (nLength is <= 0 or > 65536) return null;
 
                     Marshal.FreeHGlobal(ipObjName);
                     ipObjName = Marshal.AllocHGlobal(nLength);
@@ -265,7 +265,7 @@
                 foreach (string drivePath in Environment.GetLogicalDrives()) {
                     string drv = drivePath.Substring(0, 2);
                     int result = Kernel32.QueryDosDevice(drv, target, 1024);
-                    if (result > 0 && result < 1024) {
+                    if (result is > 0 and < 1024) {
                         string dosDevice = Marshal.PtrToStringAnsi(new IntPtr(target));
                         if (dosDevice.Equals(device)) {
                             return $"{drv}{path}";
@@ -327,7 +327,7 @@
                 Result<string> targetResult = GetTarget(file);
                 if (!targetResult.TryGet(out string target))
                     return targetResult;
-                if (target != null) return target;
+                if (target is not null) return target;
             } finally {
                 file.Close();
             }
@@ -393,7 +393,7 @@
             if (file.IsInvalid)
                 throw new ArgumentException("Invalid file handle");
 
-            List<Kernel32.BY_HANDLE_FILE_INFORMATION> recursion = new List<Kernel32.BY_HANDLE_FILE_INFORMATION>();
+            List<Kernel32.BY_HANDLE_FILE_INFORMATION> recursion = new();
             bool result = Kernel32.GetFileInformationByHandle(file, out Kernel32.BY_HANDLE_FILE_INFORMATION fileInfoByHandle);
             if (!result)
                 return Result.FromException<string>(new FileNotFoundException($"File {path} not found", path));
@@ -403,7 +403,7 @@
             Result<string> targetResult = GetLinkTargetDirect(prevTarget, file);
             if (!targetResult.TryGet(out string target))
                 return Result.FromException<string>(targetResult.Error);
-            if (target == null) return prevTarget;
+            if (target is null) return prevTarget;
 
             string unresolvedLink = target;
             do {
@@ -435,7 +435,7 @@
                     targetResult = GetLinkTargetDirect(prevTarget, next);
                     if (!targetResult.TryGet(out target))
                         return Result.FromException<string>(targetResult.Error);
-                    if (target == null) {
+                    if (target is null) {
                         return prevTarget;
                     }
                 } finally {

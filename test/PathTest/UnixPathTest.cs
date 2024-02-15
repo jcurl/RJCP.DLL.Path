@@ -26,7 +26,7 @@
         [TestCase("鳥/目/山水.txt", UnixPathFeature.None)]
         public void ParsePath(string path, UnixPathFeature features)
         {
-            UnixPath p = new UnixPath(path);
+            UnixPath p = new(path);
             Console.WriteLine($"{p}");
 
             string expectedPath = path ?? string.Empty;
@@ -58,12 +58,12 @@
         [TestCase("//foo", "/foo")]
         public void NormalizedPath(string path, string expectedPath)
         {
-            if (expectedPath == null) {
+            if (expectedPath is null) {
                 Assert.That(() => {
                     _ = new UnixPath(path);
                 }, Throws.TypeOf<ArgumentException>());
             } else {
-                UnixPath p = new UnixPath(path);
+                UnixPath p = new(path);
                 Assert.That(p.ToString(), Is.EqualTo(expectedPath));
             }
         }
@@ -73,7 +73,7 @@
         [TestCase("/foo/", "/foo")]
         public void TrimPath(string path, string expectedPath)
         {
-            UnixPath p = new UnixPath(path);
+            UnixPath p = new(path);
             Assert.That(p.Trim().ToString(), Is.EqualTo(expectedPath));
         }
 
@@ -91,7 +91,7 @@
         [TestCase("../..", "../../..")]
         public void GetParent(string path, string expectedNewPath)
         {
-            UnixPath p = new UnixPath(path);
+            UnixPath p = new(path);
             Assert.That(p.GetParent().ToString(), Is.EqualTo(expectedNewPath));
         }
 
@@ -116,8 +116,8 @@
         [TestCase("A/B/C", "A/b/c", "../../B/C")]
         public void GetRelative(string path, string basePath, string expected)
         {
-            UnixPath p = new UnixPath(path);
-            UnixPath b = new UnixPath(basePath);
+            UnixPath p = new(path);
+            UnixPath b = new(basePath);
             Path r = p.GetRelative(b);
             Assert.That(r.ToString(), Is.EqualTo(expected));
 
@@ -167,9 +167,9 @@
         [TestCase("/", "..", null)]
         public void Append(string path, string extend, string expected)
         {
-            UnixPath p = new UnixPath(path);
+            UnixPath p = new(path);
 
-            if (expected != null) {
+            if (expected is not null) {
                 Assert.That(p.Append(extend).ToString(), Is.EqualTo(expected));
             } else {
                 Assert.That(() => {

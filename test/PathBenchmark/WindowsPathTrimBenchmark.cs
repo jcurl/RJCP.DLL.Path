@@ -4,8 +4,8 @@
 
     public class WindowsPathTrimBenchmark
     {
-        private static readonly WindowsPath UntrimmedPath = new WindowsPath(@"C:\users\home\repository\project\");
-        private static readonly WindowsPath TrimmedPath = new WindowsPath(@"C:\users\home\repository\project");
+        private static readonly WindowsPath UntrimmedPath = new(@"C:\users\home\repository\project\");
+        private static readonly WindowsPath TrimmedPath = new(@"C:\users\home\repository\project");
 
         [Benchmark]
         public Path Trimmed() => UntrimmedPath.Trim();

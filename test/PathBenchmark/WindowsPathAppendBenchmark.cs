@@ -4,14 +4,14 @@ namespace RJCP.IO
 
     public class WindowsPathAppendBenchmark
     {
-        private static readonly WindowsPath RelativePath1 = new WindowsPath(@"users\home");
-        private static readonly WindowsPath RelativePath2 = new WindowsPath(@"documents\repos\project");
+        private static readonly WindowsPath RelativePath1 = new(@"users\home");
+        private static readonly WindowsPath RelativePath2 = new(@"documents\repos\project");
 
-        private static readonly WindowsPath DosPath = new WindowsPath(@"C:\users\home");
+        private static readonly WindowsPath DosPath = new(@"C:\users\home");
 
-        private static readonly WindowsPath DosPath2 = new WindowsPath(@"X:\remote\share");
+        private static readonly WindowsPath DosPath2 = new(@"X:\remote\share");
 
-        private static readonly WindowsPath UncPath = new WindowsPath(@"\\server\share\home");
+        private static readonly WindowsPath UncPath = new(@"\\server\share\home");
 
         [Benchmark]
         public Path DosDrive() => DosPath.Append(RelativePath2);

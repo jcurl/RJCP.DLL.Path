@@ -46,7 +46,7 @@ namespace RJCP.FileInfoCheck
             IO.Path baseDir = IO.Path.ToPath(fileName);
             if (!baseDir.IsPinned) baseDir = IO.Path.ToPath(Environment.CurrentDirectory).Append(baseDir);
 
-            using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+            using (FileStream file = new(fileName, FileMode.Open, FileAccess.Read, FileShare.Read)) {
                 return Execute(file, baseDir.GetParent());
             }
         }
@@ -56,7 +56,7 @@ namespace RJCP.FileInfoCheck
             int pass = 0;
             int fail = 0;
 
-            XmlTreeReader xmlTreeReader = new XmlTreeReader() {
+            XmlTreeReader xmlTreeReader = new() {
                 Nodes = {
                     new XmlTreeNode(RootNode) {
                         Nodes = {
@@ -169,14 +169,14 @@ namespace RJCP.FileInfoCheck
         static bool Compare(XmlReader reader, string attribute, string expected)
         {
             string value = reader[attribute];
-            if (value == null) return false;
+            if (value is null) return false;
 
             return value.Equals(expected, StringComparison.InvariantCultureIgnoreCase);
         }
 
         static void PrintCompare(string attr, string actual, string expected)
         {
-            if (expected == null) return;
+            if (expected is null) return;
 
             actual = actual?.Trim();
             expected = expected?.Trim();

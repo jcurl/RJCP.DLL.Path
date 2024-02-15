@@ -37,7 +37,7 @@
         {
             // Check consistency rules for the path, to ensure that any changes to this code doesn't cause regressions.
             // This is not done in RELEASE mode for performance.
-            if (RootVolume == null)
+            if (RootVolume is null)
                 throw new InvalidOperationException("Inconsistent state - RootVolume is null");
 
             if (!string.IsNullOrEmpty(RootVolume))
@@ -63,7 +63,7 @@
 
         private void ParsePath(string path)
         {
-            if (path == null) {
+            if (path is null) {
                 PathStack.InitializeEmpty();
                 m_Path = string.Empty;
                 return;
@@ -106,7 +106,7 @@
                 pathStart = 1;
             }
 
-            List<string> stack = new List<string>();
+            List<string> stack = new();
             int ps = pathStart;
             for (int i = ps; i < trimmedPath.Length; i++) {
                 char c = trimmedPath[i];
@@ -198,7 +198,7 @@
         public override Path Append(Path path)
         {
             // Both must be a Unix path
-            if (!(path is UnixPath unixPath)) return this;
+            if (path is not UnixPath unixPath) return this;
 
             // Rule 1
             if (IsEmpty(unixPath)) return this;
@@ -207,7 +207,7 @@
             // Rule 4
             if (unixPath.IsPinned) return path;
 
-            UnixPath newPath = new UnixPath {
+            UnixPath newPath = new() {
                 IsPinned = IsPinned || unixPath.IsPinned,
             };
 
@@ -285,7 +285,7 @@
             int nodes = PathStack.Count;
             if (nodes > 0 && string.IsNullOrEmpty(PathStack[nodes - 1])) nodes--;
 
-            UnixPath newPath = new UnixPath {
+            UnixPath newPath = new() {
                 IsPinned = IsPinned,
             };
 
@@ -312,7 +312,7 @@
                     newPath.PathStack.InitializeEmpty();
                 }
             } else {
-                List<string> stack = new List<string>();
+                List<string> stack = new();
                 for (int i = 0; i < nodes; i++) {
                     stack.Add(PathStack[i]);
                 }
@@ -340,7 +340,7 @@
         public override Path GetRelative(Path basePath)
         {
             // Both must be a Windows path
-            if (!(basePath is UnixPath winPath)) return this;
+            if (basePath is not UnixPath winPath) return this;
             return GetRelativeUnix(winPath);
         }
 
@@ -375,11 +375,11 @@
 
             if (match == -1) match = pos;      // The length of the shortest stack
 
-            UnixPath newPath = new UnixPath {
+            UnixPath newPath = new() {
                 IsPinned = false,
             };
 
-            List<string> stack = new List<string>();
+            List<string> stack = new();
             newPath.m_Parents = rightLen - match;
             for (int i = 0; i < newPath.m_Parents; i++) {
                 stack.Add("..");
@@ -405,7 +405,7 @@
         {
             if (IsTrimmed()) return this;
 
-            UnixPath newPath = new UnixPath {
+            UnixPath newPath = new() {
                 IsPinned = IsPinned,
             };
 
@@ -447,7 +447,7 @@
             if (PathStack.Count == 0) {
                 m_Path = string.Empty;
             } else {
-                StringBuilder path = new StringBuilder();
+                StringBuilder path = new();
                 if (IsPinned) path.Append('/');
 #if NET6_0_OR_GREATER
                 path.AppendJoin('/', PathStack.Stack);

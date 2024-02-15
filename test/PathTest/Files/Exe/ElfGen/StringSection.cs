@@ -14,15 +14,15 @@
 
         public List<StringSectionEntry> GenerateSection()
         {
-            List<byte[]> data = new List<byte[]>();
-            List<StringSectionEntry> entries = new List<StringSectionEntry>();
+            List<byte[]> data = new();
+            List<StringSectionEntry> entries = new();
 
             // Encode the strings and calculate the offsets in the buffer. At the end, `offset` is the total length
             // needed.
             int offset = 0;
             foreach (string value in Strings) {
                 byte[] enc = Encoding.UTF8.GetBytes(value);
-                StringSectionEntry entry = new StringSectionEntry(offset, value ?? string.Empty);
+                StringSectionEntry entry = new(offset, value ?? string.Empty);
                 data.Add(enc);
                 entries.Add(entry);
                 offset += enc.Length + 1;

@@ -80,7 +80,7 @@ namespace RJCP.IO.FileSystem
         /// </returns>
         public bool Equals(INodeInfo other)
         {
-            if (other == null) return false;
+            if (other is null) return false;
             if (other.GetType() != GetType()) return false;
             return Equals((T)other);
         }
