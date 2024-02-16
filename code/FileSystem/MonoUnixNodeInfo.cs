@@ -11,8 +11,8 @@
     /// Get file information for Windows Operating Systems.
     /// </summary>
     /// <remarks>
-    /// This class depends on glibc v6 to work (the <c>readlink</c> function). If we ever support .NET 6.0 or later, we
-    /// can use methods provided there.
+    /// This class depends on glibc v6 to work (the <c>readlink</c> function). Testing with .NET 7 on Ubuntu 22.04 shows that
+    /// <c>File.ResolveLinkTarget(path, false)</c> will only return correct results if the <c>path</c> has a file portion.
     /// </remarks>
     [SupportedOSPlatform("linux")]
     internal sealed class MonoUnixNodeInfo : NodeInfo<MonoUnixNodeInfo, MonoUnixExtended>
@@ -61,6 +61,7 @@
 
         private static string GetLinkTarget(string path)
         {
+            // Use the filesystem to get the path, not File.GetFullPath.
             using (GLibc6.SafeMallocHandle buffer = GLibc6.realpath(path, IntPtr.Zero)) {
                 if (!buffer.IsInvalid)
                     return Marshal.PtrToStringAnsi(buffer.DangerousGetHandle());
