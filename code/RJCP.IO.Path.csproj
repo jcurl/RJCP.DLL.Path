@@ -52,7 +52,16 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp'">
-    <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
+    <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" >
+      <!-- Suppress the warning that we're using MONO which isn't a final version. It actually is, and hasn't been
+          updated since 8/Sep/2021.
+
+          NuGet.Build.Tasks.Pack.targets(221,5): warning NU5104: A stable release of a package should not have a
+          prerelease dependency. Either modify the version spec of dependency
+          "Mono.Unix [7.1.0-final.1.21458.1, )" or update the version field in the nuspec.
+      -->
+      <NoWarn>NU5104</NoWarn>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
