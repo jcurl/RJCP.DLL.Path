@@ -6,3 +6,4 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Style", "IDE0056:Use index operator", Justification = "NET Framework code")]
+[assembly: SuppressMessage("Style", "IDE0230:Use UTF-8 string literal", Justification = "<Pending>")]
