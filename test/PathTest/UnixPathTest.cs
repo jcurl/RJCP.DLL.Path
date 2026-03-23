@@ -30,11 +30,11 @@
             Console.WriteLine($"{p}");
 
             string expectedPath = path ?? string.Empty;
-            Assert.Multiple(() => {
+            using (Assert.EnterMultipleScope()) {
                 Assert.That(p.ToString(), Is.EqualTo(expectedPath));
                 Assert.That(p.RootVolume, Is.EqualTo(string.Empty));
                 Assert.That(p.IsPinned, Is.EqualTo(features.HasFlag(UnixPathFeature.IsPinned)));
-            });
+            }
         }
 
         [TestCase("/foo/..", "/")]

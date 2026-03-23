@@ -115,13 +115,13 @@ namespace RJCP.IO.Files.Exe
 
             // Check that the file can contain the Program Header.
             if (hdr32.e_phnum == 0 ||
-                hdr32.e_phentsize < Marshal.SizeOf(typeof(ElfHeader.elf32_phdr)) ||
+                hdr32.e_phentsize < MarshalExt.SizeOf<ElfHeader.elf32_phdr>() ||
                 hdr32.e_phoff >= br.BaseStream.Length ||
                 hdr32.e_phoff + hdr32.e_phentsize * hdr32.e_phnum > br.BaseStream.Length)
                 return Result.FromException<ElfHeader.elf32_hdr>(new BadImageFormatException("Not a valid ELF image"));
 
             if (hdr32.e_shnum != 0) {
-                if (hdr32.e_shentsize < Marshal.SizeOf(typeof(ElfHeader.elf32_shdr)) ||
+                if (hdr32.e_shentsize < MarshalExt.SizeOf<ElfHeader.elf32_shdr>() ||
                     hdr32.e_shoff >= br.BaseStream.Length ||
                     hdr32.e_shoff + hdr32.e_shentsize * hdr32.e_shnum > br.BaseStream.Length)
                     return Result.FromException<ElfHeader.elf32_hdr>(new BadImageFormatException("Not a valid ELF image"));
@@ -142,13 +142,13 @@ namespace RJCP.IO.Files.Exe
 
             // Check that the file can contain the Program Header.
             if (hdr64.e_phnum == 0 ||
-                hdr64.e_phentsize < Marshal.SizeOf(typeof(ElfHeader.elf64_phdr)) ||
+                hdr64.e_phentsize < MarshalExt.SizeOf<ElfHeader.elf64_phdr>() ||
                 hdr64.e_phoff > 0x7FFFFFFF_FFFFFFFF || hdr64.e_phoff >= (ulong)br.BaseStream.Length ||
                 hdr64.e_phoff + (ulong)(hdr64.e_phnum * hdr64.e_phentsize) > (ulong)br.BaseStream.Length)
                 return Result.FromException<ElfHeader.elf64_hdr>(new BadImageFormatException("Not a valid ELF image"));
 
             if (hdr64.e_shnum != 0) {
-                if (hdr64.e_shentsize < Marshal.SizeOf(typeof(ElfHeader.elf64_shdr)) ||
+                if (hdr64.e_shentsize < MarshalExt.SizeOf<ElfHeader.elf64_shdr>() ||
                     hdr64.e_shoff > 0x7FFFFFFF_FFFFFFFF || hdr64.e_shoff >= (ulong)br.BaseStream.Length ||
                     hdr64.e_shoff + (ulong)(hdr64.e_shentsize * hdr64.e_shnum) > (ulong)br.BaseStream.Length)
                     return Result.FromException<ElfHeader.elf64_hdr>(new BadImageFormatException("Not a valid ELF image"));

@@ -8,7 +8,11 @@
     {
         public static T ReadStruct<T>(this BinaryReader reader) where T : struct
         {
+#if NETFRAMEWORK
             return ReadStruct<T>(reader, Marshal.SizeOf(typeof(T)));
+#else
+            return ReadStruct<T>(reader, Marshal.SizeOf<T>());
+#endif
         }
 
 #if NETFRAMEWORK
@@ -47,7 +51,7 @@
                 }
                 readTotal += read;
             } while (readTotal < sBuff.Length && !readComplete);
-            return (T)Marshal.PtrToStructure(new IntPtr(buffer), typeof(T));
+            return Marshal.PtrToStructure<T>(new IntPtr(buffer));
         }
 #endif
 

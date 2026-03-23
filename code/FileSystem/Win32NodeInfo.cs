@@ -69,7 +69,7 @@
 
                 if (Api.GetFileInformationByHandleEx) {
                     try {
-                        int idInfoSize = Marshal.SizeOf(typeof(Kernel32.FILE_ID_INFO));
+                        int idInfoSize = MarshalExt.SizeOf<Kernel32.FILE_ID_INFO>();
                         bool resultEx = Kernel32.GetFileInformationByHandleEx(file, Kernel32.FILE_INFO_BY_HANDLE_CLASS.FileIdInfo,
                             out Kernel32.FILE_ID_INFO fileInfoEx, idInfoSize);
                         if (resultEx) {
@@ -217,7 +217,7 @@
                 if (ntstatus != 0) return null;
 
                 NtDll.FILE_NAME_INFORMATION objFileName =
-                    (NtDll.FILE_NAME_INFORMATION)Marshal.PtrToStructure(ipFileName, typeof(NtDll.FILE_NAME_INFORMATION));
+                    MarshalExt.PtrToStructure<NtDll.FILE_NAME_INFORMATION>(ipFileName);
                 if (objFileName.FileNameLength <= 0) return null;
 
                 // The file name is placed after the length, which is a ULONG (32-bit on Windows).
@@ -248,7 +248,7 @@
                 }
 
                 NtDll.OBJECT_NAME_INFORMATION objName =
-                    (NtDll.OBJECT_NAME_INFORMATION)Marshal.PtrToStructure(ipObjName, typeof(NtDll.OBJECT_NAME_INFORMATION));
+                    MarshalExt.PtrToStructure<NtDll.OBJECT_NAME_INFORMATION>(ipObjName);
                 if (objName.Name.Length <= 0) return null;
                 if (objName.Name.Buffer.Equals(IntPtr.Zero)) return null;
                 return Marshal.PtrToStringUni(objName.Name.Buffer, objName.Name.Length / 2);
@@ -456,9 +456,9 @@
         [Conditional("DEBUG")]
         private static void CheckReparseStructs()
         {
-            int s1 = Marshal.SizeOf(typeof(Kernel32.REPARSE_DATA_BUFFER_Generic));
-            int s2 = Marshal.SizeOf(typeof(Kernel32.REPARSE_DATA_BUFFER_SymbolicLink));
-            int s3 = Marshal.SizeOf(typeof(Kernel32.REPARSE_DATA_BUFFER_Junction));
+            int s1 = MarshalExt.SizeOf<Kernel32.REPARSE_DATA_BUFFER_Generic>();
+            int s2 = MarshalExt.SizeOf<Kernel32.REPARSE_DATA_BUFFER_SymbolicLink>();
+            int s3 = MarshalExt.SizeOf<Kernel32.REPARSE_DATA_BUFFER_Junction>();
             if (s1 < s2) throw new InvalidOperationException("Internal Error");
             if (s1 < s3) throw new InvalidOperationException("Internal Error");
         }
@@ -524,7 +524,7 @@
             // - https://www.codeproject.com/Articles/15633/Manipulating-NTFS-Junction-Points-in-NET
             IntPtr outBuffer = IntPtr.Zero;
             try {
-                int outBufferSize = Marshal.SizeOf(typeof(Kernel32.REPARSE_DATA_BUFFER_Generic));
+                int outBufferSize = MarshalExt.SizeOf<Kernel32.REPARSE_DATA_BUFFER_Generic>();
                 outBuffer = Marshal.AllocHGlobal(outBufferSize);
 
                 bool success = Kernel32.DeviceIoControl(file, Kernel32.FSCTL.GET_REPARSE_POINT,
@@ -534,12 +534,12 @@
                     return Result.FromException<string>(new FileNotFoundException($"Link {path} can't be resolved", path, ex));
                 }
                 Kernel32.REPARSE_DATA_BUFFER_Generic genReparseDataBuffer =
-                    (Kernel32.REPARSE_DATA_BUFFER_Generic)Marshal.PtrToStructure(outBuffer, typeof(Kernel32.REPARSE_DATA_BUFFER_Generic));
+                    MarshalExt.PtrToStructure<Kernel32.REPARSE_DATA_BUFFER_Generic>(outBuffer);
 
                 switch (genReparseDataBuffer.ReparseTag) {
                 case Kernel32.IO_REPARSE_TAG_SYMLINK:
                     Kernel32.REPARSE_DATA_BUFFER_SymbolicLink symReparseDataBuffer =
-                        (Kernel32.REPARSE_DATA_BUFFER_SymbolicLink)Marshal.PtrToStructure(outBuffer, typeof(Kernel32.REPARSE_DATA_BUFFER_SymbolicLink));
+                        MarshalExt.PtrToStructure<Kernel32.REPARSE_DATA_BUFFER_SymbolicLink>(outBuffer);
 
                     if ((symReparseDataBuffer.Flags & Kernel32.SYMLINK_FLAG_RELATIVE) != 0) {
                         // This is a relative path. We need to update it based on the absolute initial path.
@@ -568,7 +568,7 @@
                     return symTarget;
                 case Kernel32.IO_REPARSE_TAG_MOUNT_POINT:
                     Kernel32.REPARSE_DATA_BUFFER_Junction junReparseDataBuffer =
-                        (Kernel32.REPARSE_DATA_BUFFER_Junction)Marshal.PtrToStructure(outBuffer, typeof(Kernel32.REPARSE_DATA_BUFFER_Junction));
+                        MarshalExt.PtrToStructure<Kernel32.REPARSE_DATA_BUFFER_Junction>(outBuffer);
 
                     // On Windows XP, the PrintNameLength is zero.
                     if (junReparseDataBuffer.PrintNameLength != 0) {

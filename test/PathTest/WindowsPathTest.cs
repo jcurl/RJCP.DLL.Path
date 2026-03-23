@@ -82,13 +82,13 @@
             WindowsPath p = new(path);
             Console.WriteLine($"{p}");
 
-            Assert.Multiple(() => {
+            using (Assert.EnterMultipleScope()) {
                 Assert.That(p.ToString(), Is.EqualTo(expectedPath));
                 Assert.That(p.RootVolume, Is.EqualTo(rootVolume));
                 Assert.That(p.IsPinned, Is.EqualTo(features.HasFlag(WinPathFeature.IsPinned)));
                 Assert.That(p.IsDos, Is.EqualTo(features.HasFlag(WinPathFeature.IsDos)));
                 Assert.That(p.IsUnc, Is.EqualTo(features.HasFlag(WinPathFeature.IsUnc)));
-            });
+            }
         }
 
         [TestCase(@"ü:\")]

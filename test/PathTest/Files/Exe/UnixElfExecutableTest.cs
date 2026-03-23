@@ -259,10 +259,10 @@
         /// </summary>
         [Test]
         public void ElfExeTypeExe(
-            [Values(false, true)] bool ptinterp,
-            [Values(false, true)] bool symtab,
-            [Values(false, true)] bool soname,
-            [Values(false, true)] bool pie)
+            [Values] bool ptinterp,
+            [Values] bool symtab,
+            [Values] bool soname,
+            [Values] bool pie)
         {
             using (Stream stream = GetElf(3, 0, 2, ptinterp, symtab, soname, pie))   // i386, SysV, ET_EXEC, ptinterp, symtab, soname, pie
             using (BinaryReader br = new(stream)) {
@@ -284,8 +284,8 @@
         /// </summary>
         [Test]
         public void ElfExeTypeDynPtInterp(
-            [Values(false, true)] bool symtab,
-            [Values(false, true)] bool pie)
+            [Values] bool symtab,
+            [Values] bool pie)
         {
             // The symtab should only be used when no P_INTERP and no SONAME. Because many exe's have a SymTab.
             using (Stream stream = GetElf(3, 0, 3, true, symtab, false, pie))   // i386, SysV, ET_DYN, PT_INTERP, symtab, no SONAME, pie
@@ -307,7 +307,7 @@
         /// Checks if elf. This is ET_DYN, so is PosIndep. No PT_INTERP, no SONAME, has PIE so must be an exe and symtab must be ignored.
         /// </summary>
         [Test]
-        public void ElfExeTypeDynPie([Values(false, true)] bool symtab, [Values(false, true)] bool soname)
+        public void ElfExeTypeDynPie([Values] bool symtab, [Values] bool soname)
         {
             // The symtab should only be used when no P_INTERP and no SONAME. Because many exe's have a SymTab.
             using (Stream stream = GetElf(3, 0, 3, false, symtab, soname, true))   // i386, SysV, ET_DYN, no PT_INTERP, symtab, SONAME, pie
@@ -329,7 +329,7 @@
         /// Tests the rare case where there is no PT_INTERP, for an EXE or DLL or both. PIE is not set.
         /// </summary>
         [Test]
-        public void ElfTypeDynNoPie([Values(false, true)] bool symtab, [Values(false, true)] bool soname)
+        public void ElfTypeDynNoPie([Values] bool symtab, [Values] bool soname)
         {
             // The symtab should only be used when no P_INTERP and no SONAME. Because many exe's have a SymTab.
             using (Stream stream = GetElf(3, 0, 3, false, symtab, soname, false))   // i386, SysV, ET_DYN, no PT_INTERP, symtab, SONAME, no pie
@@ -1086,7 +1086,7 @@
         /// Tests when the string section is the last part, such that the offset and length is the file length.
         /// </summary>
         [Test]
-        public void ElfStringTableSizeExactLength([Values(false, true)] bool overflow)
+        public void ElfStringTableSizeExactLength([Values] bool overflow)
         {
             // Move the string section to the end of the file.
             List<SparseBlock> file = GetExeDynElfBlocks(3, 0, 3, false, true, false, false);
